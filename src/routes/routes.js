@@ -13,7 +13,7 @@ import auth from '../routes/middlewares/auth';
 const routes = [
     { path: '/', component: HomePage, name: 'home', beforeEnter: auth.user },
     { path: '/login', component: LoginPage, name: 'login', beforeEnter: auth.guest },
-    { path: '/appointments', component: AppoitmentPage, name: 'appointments'},
+    { path: '/appointments', component: AppoitmentPage, name: 'appointments', beforeEnter: auth.user},
 
 ];
 
