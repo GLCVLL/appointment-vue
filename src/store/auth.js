@@ -7,6 +7,7 @@ const state = reactive({
 
 // # Getter
 export const isLogged = () => state.user !== null;
+export const getUser = () => state.user;
 
 // # Setter
 export const setUser = user => { state.user = user; };

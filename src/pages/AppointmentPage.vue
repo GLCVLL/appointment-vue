@@ -1,10 +1,12 @@
 <script>
+import { getUser } from '../store/auth.js';
 export default {
     name: 'AppointmentPage',
 
     // Data properties for the component
     data() {
         return {
+            userId: null,
             services: [],        // Stores services data
             slotDays: [],        // Stores available slot days
             closedDays: [],      // Stores closed days
@@ -110,6 +112,7 @@ export default {
     mounted() {
         this.fetchServices();
         this.fetchSlotDays();
+        this.userId = getUser().id;
     }
 };
 </script>
