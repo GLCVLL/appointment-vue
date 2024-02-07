@@ -20,7 +20,7 @@ axiosInstance.interceptors.request.use(req => {
 axiosInstance.interceptors.response.use(
     res => res,
     err => {
-        if (err.response.status === 401 && err.response.data.message !== 'login-failed') {
+        if (err.response && err.response.status === 401 && err.response.data.message !== 'login-failed') {
             localStorage.removeItem('user');
             window.location.reload();
         }
