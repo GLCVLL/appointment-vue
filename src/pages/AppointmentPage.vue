@@ -1,6 +1,7 @@
 <script>
 import { getUser } from '../store/auth.js';
 import AppLoader from '../components/AppLoader.vue';
+import AppAlert from '../components/AppAlert.vue';
 export default {
     name: 'AppointmentPage',
 
@@ -14,6 +15,11 @@ export default {
             timeArray: [],       // Stores available time slots
             errors: {},
             isLoading: false,
+            alert: {
+                isVisible: false,
+                type: 'success',
+                message: '',
+            },
             appointmentForm: {   // Form data for appointment
                 date: '',        // Selected date for the appointment
                 start_time: '',   // Selected start time for the appointment
@@ -23,7 +29,7 @@ export default {
         };
     },
     components: {
-        AppLoader,
+        AppLoader, AppAlert,
     },
     computed: {
         selectedDuration() {
@@ -132,11 +138,20 @@ export default {
                 };
 
                 this.isLoading = true;
-                // salvare appuntamento(loader, messaggio andato a buon fine o errore)
+
+                this.alert = {
+                    isVisible: false,
+                    type: 'success',
+                    message: '',
+                };
 
                 this.$axios.post(`${apiUrl}/api/appointments`, payload).then(response => {
 
-                    console.log("Appointment successfully created");
+                    this.alert = {
+                        isVisible: true,
+                        type: 'success',
+                        message: 'Appointment successfully created',
+                    };
                     this.appointmentForm = {
                         date: '',
                         start_time: '',
@@ -146,10 +161,10 @@ export default {
                 }).catch(err => {
                     console.log(err);
                     // Backend Validation Error
-                    if (err.response.status === 400) {
+                    if (err.response && err.response.status === 400) {
 
                         // Get Errors
-                        const { errors } = err.response.data;
+                        const { errors, appErrors } = err.response.data;
 
                         console.log(errors);
                         // Reset Messages
@@ -159,10 +174,22 @@ export default {
                         for (let field in errors) errorMessages[field] = errors[field][0];
                         this.errors = { ...errorMessages };
 
+                        // Set AppAlert
+                        if (appErrors) {
+                            this.alert = {
+                                isVisible: true,
+                                type: 'danger',
+                                message: appErrors,
+                            };
+                        }
                     } else {
                         // Other Errors
                         this.errors = { network: 'Something went wrong' }
-                        console.log(this.errors);
+                        this.alert = {
+                            isVisible: true,
+                            type: 'danger',
+                            message: 'Something went wrong',
+                        };
                     }
                 }).then(() => {
                     this.isLoading = false;
@@ -182,6 +209,7 @@ export default {
 
 <template>
     <div class="container mt-4">
+        <AppAlert v-if="alert.isVisible" :type="alert.type">{{ alert.message }}</AppAlert>
         <form @submit.prevent="submitForm" method="POST">
             <div class="row mb-3">
                 <!-- Services -->
