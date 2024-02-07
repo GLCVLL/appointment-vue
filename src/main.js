@@ -5,8 +5,10 @@ import router from './routes/routes';
 
 // Axios configuration
 const axiosInstance = axios.create({
-    withCredentials: true
+    withCredentials: true,
+    withXSRFToken: true
 });
+
 axiosInstance.interceptors.request.use(req => {
     req.headers = req.headers || {};
     req.headers.common = req.headers.common || {};
@@ -23,7 +25,7 @@ axiosInstance.interceptors.response.use(
             window.location.reload();
         }
 
-        Promise.reject(err);
+        return Promise.reject(err);
     }
 );
 
