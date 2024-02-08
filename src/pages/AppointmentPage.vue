@@ -152,6 +152,11 @@ export default {
                         type: 'success',
                         message: 'Appointment successfully created',
                     };
+
+                    // update slotDays
+                    this.fetchSlotDays();
+
+                    // reset
                     this.appointmentForm = {
                         date: '',
                         start_time: '',
@@ -166,7 +171,6 @@ export default {
                         // Get Errors
                         const { errors, appErrors } = err.response.data;
 
-                        console.log(errors);
                         // Reset Messages
                         const errorMessages = {};
 
