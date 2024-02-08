@@ -100,10 +100,13 @@ export default {
         async fetchServices() {
             try {
                 const apiUrl = import.meta.env.VITE_BASEURI;
+                this.isLoading = true;
                 const { data } = await this.$axios.get(`${apiUrl}/api/services`);
                 this.services = data.services;
             } catch (error) {
                 console.error("Error loading data:", error);
+            } finally {
+                this.isLoading = false;
             }
         },
 

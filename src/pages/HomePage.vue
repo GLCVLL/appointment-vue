@@ -1,4 +1,5 @@
 <script>
+import AppLoader from '../components/AppLoader.vue';
 export default {
     name: 'HomePage',
     data() {
@@ -6,6 +7,9 @@ export default {
             services: [],
             isLoading: false
         }
+    },
+    components: {
+        AppLoader
     },
     methods: {
         async getUsers() {
@@ -33,7 +37,7 @@ export default {
         <h1>Home Page</h1>
         <section>
             <h2>Utenti</h2>
-            <div v-if="isLoading" class="h3">Loading...</div>
+            <AppLoader v-if="isLoading" />
             <ul v-else>
                 <li v-for="service in services" :key="service.id">
                     <h5>{{ service.name }}</h5>
