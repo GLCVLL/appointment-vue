@@ -74,6 +74,11 @@ export default {
                 <div v-if="errors.password" class="invalid-feedback">{{ errors.password }}</div>
             </div>
             <button type="button" class="btn btn-primary" @click="submitForm">Login</button>
+            <!-- Register Page -->
+            <div class="mt-3">
+                <span>Not registered yet?</span> <router-link to="/register" class="btn btn-secondary">Register
+                    Now</router-link>
+            </div>
         </section>
     </div>
 </template>
