@@ -1,44 +1,47 @@
 <script>
+// Importing necessary components
 import AppAlert from '../components/AppAlert.vue';
 import AppLoader from '../components/AppLoader.vue';
+
 export default {
     name: 'RegisterPage',
     data() {
         return {
-            form: {
+            form: { // Form data for registration
                 name: '',
                 email: '',
                 password: '',
                 password_confirmation: '',
             },
-            isLoading: false,
-            alert: {
+            isLoading: false, // Loading state for async operations
+            alert: { // Alert message object
                 isVisible: false,
                 type: 'success',
                 message: '',
             },
-            isUserCreated: false,
-            errors: {},
+            isUserCreated: false, // Flag to check if user registration was successful
+            errors: {}, // Object to hold form validation errors
         };
     },
     components: {
         AppLoader, AppAlert,
     },
     computed: {
-        formHasErrors() {
+        formHasErrors() { // Checks if there are any validation errors
             return Object.keys(this.errors).length;
         }
     },
     methods: {
-        submitForm() {
-            this.errors = {};
-            this.validateForm();
-            if (!this.formHasErrors) {
+        submitForm() { // Function to handle form submission
+            this.errors = {}; // Reset errors
+            this.validateForm(); // Validate form
+            if (!this.formHasErrors) { // If no errors, proceed to register
                 this.register();
             }
         },
-        validateForm() {
-            const errors = {};
+        validateForm() { // Validates form data
+            const errors = {}; // Temporary errors object
+            // Validation rules
             if (!this.form.name) errors.name = 'The name field is mandatory';
             if (!this.form.email) errors.email = 'The email field is mandatory';
             else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(this.form.email)) errors.email = 'Please insert a valid email';
@@ -46,41 +49,43 @@ export default {
             else if (this.form.password.length < 5) errors.password = 'The password must be at least 5 characters';
             if (this.form.password !== this.form.password_confirmation) errors.password_confirmation = 'The password confirmation does not match';
 
-            this.errors = errors;
+            this.errors = errors; // Set component errors to temporary errors
         },
-        async register() {
-            const apiUrl = import.meta.env.VITE_BASEURI;
-            this.isLoading = true;
+        async register() { // Async function to register user
+            const apiUrl = import.meta.env.VITE_BASEURI; // API URL from environment variable
+            this.isLoading = true; // Set loading state
 
+            // Reset alert state
             this.alert = {
                 isVisible: false,
                 type: 'success',
                 message: '',
             };
             try {
+                // Get CSRF cookie for Laravel Sanctum
                 await this.$axios.get(apiUrl + '/sanctum/csrf-cookie');
+                // Post registration data
                 await this.$axios.post(`${apiUrl}/api/register`, this.form);
+                // On success, show success alert
                 this.alert = {
                     isVisible: true,
                     type: 'success',
                     message: 'User successfully created',
                 };
 
-                this.isUserCreated = true;
+                this.isUserCreated = true; // Set user created flag
 
-            } catch (err) {
+            } catch (err) { // Catch and handle errors
                 if (err.response && err.response.status === 422) {
-                    // Get Errors
+                    // Extract validation errors from response
                     const { errors, appErrors } = err.response.data;
 
-                    // Reset Messages
+                    // Convert errors to component format
                     const errorMessages = {};
-
-                    // Set Error Messages
                     for (let field in errors) errorMessages[field] = errors[field][0];
                     this.errors = { ...errorMessages };
 
-                    // Set AppAlert
+                    // Set alert for app-level errors
                     if (appErrors) {
                         this.alert = {
                             isVisible: true,
@@ -88,8 +93,7 @@ export default {
                             message: appErrors,
                         };
                     }
-                } else {
-                    // Other Errors
+                } else { // Handle other errors
                     this.errors = { network: 'Something went wrong' }
                     this.alert = {
                         isVisible: true,
@@ -98,10 +102,9 @@ export default {
                     };
                 }
             } finally {
-                this.isLoading = false;
+                this.isLoading = false; // Reset loading state
             }
         }
-
     },
 };
 </script>
