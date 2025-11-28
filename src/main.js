@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { createApp } from 'vue';
-import App from './App.vue';
-import router from './routes/routes';
+import App from '@/App.vue';
+import router from '@/routes/routes';
 
 // Axios configuration
 const axiosInstance = axios.create({

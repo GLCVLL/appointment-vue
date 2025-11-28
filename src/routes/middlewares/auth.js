@@ -1,4 +1,4 @@
-import user from './rules/user';
-import guest from './rules/guest';
+import user from '@/routes/middlewares/rules/user';
+import guest from '@/routes/middlewares/rules/guest';
 
 export default {user, guest};

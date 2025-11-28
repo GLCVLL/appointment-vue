@@ -1,14 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 // pages
-import HomePage from '../pages/HomePage.vue';
-import RegisterPage from '../pages/RegisterPage.vue';
-import LoginPage from '../pages/LoginPage.vue';
-import AppoitmentPage from '../pages/AppointmentPage.vue';
+import HomePage from '@/pages/HomePage.vue';
+import RegisterPage from '@/pages/RegisterPage.vue';
+import LoginPage from '@/pages/LoginPage.vue';
+import AppoitmentPage from '@/pages/AppointmentPage.vue';
 
 
 // middleware
-import auth from '../routes/middlewares/auth';
+import auth from '@/routes/middlewares/auth';
 
 // Routes
 const routes = [

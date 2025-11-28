@@ -1,4 +1,4 @@
-import {isLogged} from '../../../store/auth';
+import {isLogged} from '@/store/auth';
 
 // if you are logged
 

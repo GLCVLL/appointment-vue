@@ -1,7 +1,7 @@
 <script>
-import { getUser } from '../store/auth.js';
-import AppLoader from '../components/AppLoader.vue';
-import AppAlert from '../components/AppAlert.vue';
+import { getUser } from '@/store/auth.js';
+import AppLoader from '@/components/AppLoader.vue';
+import AppAlert from '@/components/AppAlert.vue';
 export default {
     name: 'AppointmentPage',
 

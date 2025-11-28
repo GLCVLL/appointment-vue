@@ -1,6 +1,6 @@
 <script>
-import { default as auth, isLogged } from './store/auth';
-import LogoutButton from './components/LogoutButton.vue';
+import { default as auth, isLogged } from '@/store/auth';
+import LogoutButton from '@/components/LogoutButton.vue';
 export default {
   name: 'App',
   components: { LogoutButton },

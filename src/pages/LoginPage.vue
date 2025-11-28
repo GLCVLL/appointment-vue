@@ -1,5 +1,5 @@
 <script>
-import { setUser } from '../store/auth';
+import { setUser } from '@/store/auth';
 
 
 export default {

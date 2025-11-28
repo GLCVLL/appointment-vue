@@ -1,7 +1,7 @@
 <script>
 // Importing necessary components
-import AppAlert from '../components/AppAlert.vue';
-import AppLoader from '../components/AppLoader.vue';
+import AppAlert from '@/components/AppAlert.vue';
+import AppLoader from '@/components/AppLoader.vue';
 
 export default {
     name: 'RegisterPage',

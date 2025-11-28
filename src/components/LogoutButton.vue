@@ -1,5 +1,5 @@
 <script>
-import { isLogged, removeUser } from '../store/auth';
+import { isLogged, removeUser } from '@/store/auth';
 export default {
     name: 'LogoutButton',
     computed: {
