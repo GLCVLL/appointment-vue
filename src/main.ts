@@ -1,33 +1,39 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { createApp } from 'vue';
-import App from '@/App.vue';
-import router from '@/routes/routes';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { createApp } from "vue";
+import PrimeVue from "primevue/config";
+import Aura from "@primeuix/themes/aura";
+import App from "@/App.vue";
+import router from "@/routes/routes";
 
 // Axios configuration
 const axiosInstance = axios.create({
-    withCredentials: true,
-    withXSRFToken: true
+  withCredentials: true,
+  withXSRFToken: true,
 });
 
 axiosInstance.interceptors.request.use((req: InternalAxiosRequestConfig) => {
-    req.headers = req.headers || {};
-    req.headers.common = req.headers.common || {};
-    req.headers.common['Accept'] = 'application/json';
-    req.headers.common['Content-Type'] = 'application/json';
-    return req;
+  req.headers = req.headers || {};
+  req.headers.common = req.headers.common || {};
+  req.headers.common["Accept"] = "application/json";
+  req.headers.common["Content-Type"] = "application/json";
+  return req;
 });
 
 axiosInstance.interceptors.response.use(
-    res => res,
-    (err: AxiosError) => {
-        if (err.response && err.response.status === 401 && err.response.data && (err.response.data as { message?: string }).message !== 'login-failed') {
-            localStorage.removeItem('user');
-            window.location.reload();
-        }
-
-        return Promise.reject(err);
+  (res) => res,
+  (err: AxiosError) => {
+    if (
+      err.response &&
+      err.response.status === 401 &&
+      err.response.data &&
+      (err.response.data as { message?: string }).message !== "login-failed"
+    ) {
+      localStorage.removeItem("user");
+      window.location.reload();
     }
+
+    return Promise.reject(err);
+  }
 );
 
 const app = createApp(App);
@@ -36,5 +42,11 @@ const app = createApp(App);
 app.config.globalProperties.$axios = axiosInstance;
 
 app.use(router);
-app.mount('#app');
 
+app.use(PrimeVue, {
+  theme: {
+    preset: Aura,
+  },
+});
+
+app.mount("#app");
