@@ -6,7 +6,7 @@
     <div class="app-loader"><i class="fas fa-spinner fa-5x fa-spin-pulse"></i></div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .app-loader {
     position: fixed;
     inset: 0;

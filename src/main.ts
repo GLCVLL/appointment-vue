@@ -2,6 +2,7 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { createApp } from 'vue';
 import App from '@/App.vue';
 import router from '@/routes/routes';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Axios configuration
 const axiosInstance = axios.create({
