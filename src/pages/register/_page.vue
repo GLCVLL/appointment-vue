@@ -4,6 +4,7 @@ import { ref, computed } from 'vue';
 import AppAlert from '@/components/AppAlert.vue';
 import AppLoader from '@/components/AppLoader.vue';
 import { useAxios } from '@/composables/useAxios';
+import PageLayout from '@/components/PageLayout.vue';
 
 interface FormData {
     name: string;
@@ -127,47 +128,49 @@ const register = async (): Promise<void> => { // Async function to register user
 </script>
 
 <template>
-    <div class="container">
-        <h1>Register Page</h1>
+    <PageLayout>
+        <div class="container">
+            <h1>Register Page</h1>
 
-        <AppAlert v-if="alert.isVisible" :type="alert.type">{{ alert.message }}</AppAlert>
+            <AppAlert v-if="alert.isVisible" :type="alert.type">{{ alert.message }}</AppAlert>
 
-        <form v-if="!isUserCreated" @submit.prevent="submitForm" novalidate>
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control" :class="{ 'is-invalid': errors.name }" id="name"
-                    v-model="form.name">
-                <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
+            <form v-if="!isUserCreated" @submit.prevent="submitForm" novalidate>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" :class="{ 'is-invalid': errors.name }" id="name"
+                        v-model="form.name">
+                    <div v-if="errors.name" class="invalid-feedback">{{ errors.name }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" :class="{ 'is-invalid': errors.email }" id="email"
+                        v-model="form.email">
+                    <div v-if="errors.email" class="invalid-feedback">{{ errors.email }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" :class="{ 'is-invalid': errors.password }" id="password"
+                        v-model="form.password">
+                    <div v-if="errors.password" class="invalid-feedback">{{ errors.password }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password_confirmation" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" :class="{ 'is-invalid': errors.password_confirmation }"
+                        id="password_confirmation" v-model="form.password_confirmation">
+                    <div v-if="errors.password_confirmation" class="invalid-feedback">{{ errors.password_confirmation }}</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+            <div v-else>
+                <span>Go to Login Page</span> <router-link to="/login" class="btn btn-primary">Login</router-link>
             </div>
-
-            <div class="mb-3">
-                <label for="email" class="form-label">Email Address</label>
-                <input type="email" class="form-control" :class="{ 'is-invalid': errors.email }" id="email"
-                    v-model="form.email">
-                <div v-if="errors.email" class="invalid-feedback">{{ errors.email }}</div>
-            </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" :class="{ 'is-invalid': errors.password }" id="password"
-                    v-model="form.password">
-                <div v-if="errors.password" class="invalid-feedback">{{ errors.password }}</div>
-            </div>
-
-            <div class="mb-3">
-                <label for="password_confirmation" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" :class="{ 'is-invalid': errors.password_confirmation }"
-                    id="password_confirmation" v-model="form.password_confirmation">
-                <div v-if="errors.password_confirmation" class="invalid-feedback">{{ errors.password_confirmation }}</div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">Register</button>
-        </form>
-        <div v-else>
-            <span>Go to Login Page</span> <router-link to="/login" class="btn btn-primary">Login</router-link>
         </div>
-    </div>
-    <AppLoader v-if="isLoading" />
+        <AppLoader v-if="isLoading" />
+    </PageLayout>
 </template>
 
 <style></style>

@@ -4,6 +4,7 @@ import { getUser } from "@/store/auth";
 import AppLoader from "@/components/AppLoader.vue";
 import AppAlert from "@/components/AppAlert.vue";
 import { useAxios } from "@/composables/useAxios";
+import PageLayout from "@/components/PageLayout.vue";
 
 interface Service {
   id: number;
@@ -282,85 +283,87 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mt-4">
-    <AppAlert v-if="alert.isVisible" :type="alert.type">{{
-      alert.message
-    }}</AppAlert>
-    <form @submit.prevent="submitForm" method="POST">
-      <div class="row mb-3">
-        <!-- Services -->
-        <div class="col-12 my-2">
-          <p>Services</p>
-          <div
-            class="d-flex flex-wrap gap-3 rounded"
-            :class="{ 'border border-danger': errors.services }"
-          >
+  <PageLayout>
+    <div class="container mt-4">
+      <AppAlert v-if="alert.isVisible" :type="alert.type">{{
+        alert.message
+      }}</AppAlert>
+      <form @submit.prevent="submitForm" method="POST">
+        <div class="row mb-3">
+          <!-- Services -->
+          <div class="col-12 my-2">
+            <p>Services</p>
             <div
-              class="form-check"
-              v-for="service in services"
-              :key="service.id"
+              class="d-flex flex-wrap gap-3 rounded"
+              :class="{ 'border border-danger': errors.services }"
             >
-              <input
-                class="form-check-input"
-                type="checkbox"
-                :id="`service-${service.id}`"
-                :value="service.id"
-                v-model="appointmentForm.services"
-                @change="updateBookingHours"
-              />
-              <label :for="`service-${service.id}`" class="form-check-label">{{
-                service.name
-              }}</label>
+              <div
+                class="form-check"
+                v-for="service in services"
+                :key="service.id"
+              >
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  :id="`service-${service.id}`"
+                  :value="service.id"
+                  v-model="appointmentForm.services"
+                  @change="updateBookingHours"
+                />
+                <label :for="`service-${service.id}`" class="form-check-label">{{
+                  service.name
+                }}</label>
+              </div>
             </div>
+            <div class="text-danger">{{ errors.services }}</div>
           </div>
-          <div class="text-danger">{{ errors.services }}</div>
-        </div>
-        <!-- Date Picker -->
-        <div class="col-md-6 my-2">
-          <label for="date" class="form-label">Appointment Date</label>
-          <input
-            @change="updateBookingHours"
-            :class="{ 'is-invalid': errors.date }"
-            type="date"
-            id="date"
-            class="form-control"
-            v-model="appointmentForm.date"
-          />
-          <div class="invalid-feedback">{{ errors.date }}</div>
-        </div>
-        <!-- Time Selectors -->
-        <div class="col-md-6 my-2">
-          <label for="start_time" class="form-label">Start Time</label>
-          <select
-            id="start_time"
-            :class="{ 'is-invalid': errors.start_time }"
-            class="form-select"
-            v-model="appointmentForm.start_time"
-          >
-            <option value="" disabled>----</option>
-            <option v-for="time in timeArray" :key="time">{{ time }}</option>
-          </select>
-          <div class="invalid-feedback">{{ errors.start_time }}</div>
-        </div>
-        <!-- Additional Notes -->
-        <div class="col-12 my-2">
-          <label for="notes" class="form-label">Notes</label>
-          <textarea
-            id="notes"
-            :class="{ 'is-invalid': errors.notes }"
-            class="form-control"
-            v-model="appointmentForm.notes"
-            placeholder="Enter additional notes"
-          ></textarea>
-          <div class="invalid-feedback">{{ errors.notes }}</div>
-        </div>
+          <!-- Date Picker -->
+          <div class="col-md-6 my-2">
+            <label for="date" class="form-label">Appointment Date</label>
+            <input
+              @change="updateBookingHours"
+              :class="{ 'is-invalid': errors.date }"
+              type="date"
+              id="date"
+              class="form-control"
+              v-model="appointmentForm.date"
+            />
+            <div class="invalid-feedback">{{ errors.date }}</div>
+          </div>
+          <!-- Time Selectors -->
+          <div class="col-md-6 my-2">
+            <label for="start_time" class="form-label">Start Time</label>
+            <select
+              id="start_time"
+              :class="{ 'is-invalid': errors.start_time }"
+              class="form-select"
+              v-model="appointmentForm.start_time"
+            >
+              <option value="" disabled>----</option>
+              <option v-for="time in timeArray" :key="time">{{ time }}</option>
+            </select>
+            <div class="invalid-feedback">{{ errors.start_time }}</div>
+          </div>
+          <!-- Additional Notes -->
+          <div class="col-12 my-2">
+            <label for="notes" class="form-label">Notes</label>
+            <textarea
+              id="notes"
+              :class="{ 'is-invalid': errors.notes }"
+              class="form-control"
+              v-model="appointmentForm.notes"
+              placeholder="Enter additional notes"
+            ></textarea>
+            <div class="invalid-feedback">{{ errors.notes }}</div>
+          </div>
 
-        <!-- Submit Button -->
-        <div class="col-12 my-2">
-          <button type="submit" class="btn btn-primary">Confirm</button>
+          <!-- Submit Button -->
+          <div class="col-12 my-2">
+            <button type="submit" class="btn btn-primary">Confirm</button>
+          </div>
         </div>
-      </div>
-    </form>
-  </div>
-  <AppLoader v-if="isLoading" />
+      </form>
+    </div>
+    <AppLoader v-if="isLoading" />
+  </PageLayout>
 </template>
