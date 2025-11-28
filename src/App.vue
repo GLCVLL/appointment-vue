@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Button from "primevue/button";
 import { isLogged } from "@/store/auth";
 import LogoutButton from "@/components/LogoutButton.vue";
 </script>
@@ -9,6 +10,8 @@ import LogoutButton from "@/components/LogoutButton.vue";
       <router-link :to="{ name: 'home' }" class="btn btn-secondary"
         >Home</router-link
       >
+
+      <Button label="Home" />
       <div class="d-flex gap-2 align-items-center">
         <router-link v-if="isLogged()" :to="{ name: 'appointments' }"
           >Appointments</router-link

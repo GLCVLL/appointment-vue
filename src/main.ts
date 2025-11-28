@@ -4,6 +4,7 @@ import PrimeVue from "primevue/config";
 import Aura from "@primeuix/themes/aura";
 import App from "@/App.vue";
 import router from "@/routes/routes";
+import "@/assets/css/style.css";
 
 // Axios configuration
 const axiosInstance = axios.create({
