@@ -1,8 +1,9 @@
-<script lang="ts">
+<script setup lang="ts">
 // Importing necessary components
-import { defineComponent } from 'vue';
+import { ref, computed } from 'vue';
 import AppAlert from '@/components/AppAlert.vue';
 import AppLoader from '@/components/AppLoader.vue';
+import { useAxios } from '@/composables/useAxios';
 
 interface FormData {
     name: string;
@@ -21,115 +22,108 @@ interface Errors {
     [key: string]: string;
 }
 
-export default defineComponent({
-    name: 'RegisterPage',
-    data() {
-        return {
-            form: { // Form data for registration
-                name: '',
-                email: '',
-                password: '',
-                password_confirmation: '',
-            } as FormData,
-            isLoading: false, // Loading state for async operations
-            alert: { // Alert message object
-                isVisible: false,
-                type: 'success',
-                message: '',
-            } as Alert,
-            isUserCreated: false, // Flag to check if user registration was successful
-            errors: {} as Errors, // Object to hold form validation errors
-        };
-    },
-    components: {
-        AppLoader, AppAlert,
-    },
-    computed: {
-        formHasErrors(): boolean { // Checks if there are any validation errors
-            return Object.keys(this.errors).length > 0;
-        }
-    },
-    methods: {
-        submitForm(): void { // Function to handle form submission
-            this.errors = {}; // Reset errors
-            this.validateForm(); // Validate form
-            if (!this.formHasErrors) { // If no errors, proceed to register
-                this.register();
-            }
-        },
-        validateForm(): void { // Validates form data
-            const errors: Errors = {}; // Temporary errors object
-            // Validation rules
-            if (!this.form.name) errors.name = 'The name field is mandatory';
-            if (!this.form.email) errors.email = 'The email field is mandatory';
-            else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(this.form.email)) errors.email = 'Please insert a valid email';
-            if (!this.form.password) errors.password = 'The password field is mandatory';
-            else if (this.form.password.length < 5) errors.password = 'The password must be at least 5 characters';
-            if (this.form.password !== this.form.password_confirmation) errors.password_confirmation = 'The password confirmation does not match';
+const axios = useAxios();
 
-            this.errors = errors; // Set component errors to temporary errors
-        },
-        async register(): Promise<void> { // Async function to register user
-            const apiUrl = import.meta.env.VITE_BASEURI as string; // API URL from environment variable
-            this.isLoading = true; // Set loading state
-
-            // Reset alert state
-            this.alert = {
-                isVisible: false,
-                type: 'success',
-                message: '',
-            };
-            try {
-                // Get CSRF cookie for Laravel Sanctum
-                await this.$axios.get(apiUrl + '/sanctum/csrf-cookie');
-                // Post registration data
-                await this.$axios.post(`${apiUrl}/api/register`, this.form);
-                // On success, show success alert
-                this.alert = {
-                    isVisible: true,
-                    type: 'success',
-                    message: 'User successfully created',
-                };
-
-                this.isUserCreated = true; // Set user created flag
-
-            } catch (err: unknown) { // Catch and handle errors
-                const axiosError = err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; appErrors?: string } } };
-                if (axiosError.response && axiosError.response.status === 422) {
-                    // Extract validation errors from response
-                    const { errors, appErrors } = axiosError.response.data || {};
-
-                    // Convert errors to component format
-                    const errorMessages: Errors = {};
-                    if (errors) {
-                        for (const field in errors) {
-                            errorMessages[field] = errors[field][0];
-                        }
-                    }
-                    this.errors = { ...errorMessages };
-
-                    // Set alert for app-level errors
-                    if (appErrors) {
-                        this.alert = {
-                            isVisible: true,
-                            type: 'danger',
-                            message: appErrors,
-                        };
-                    }
-                } else { // Handle other errors
-                    this.errors = { network: 'Something went wrong' };
-                    this.alert = {
-                        isVisible: true,
-                        type: 'danger',
-                        message: 'Something went wrong',
-                    };
-                }
-            } finally {
-                this.isLoading = false; // Reset loading state
-            }
-        }
-    },
+const form = ref<FormData>({ // Form data for registration
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
 });
+
+const isLoading = ref(false); // Loading state for async operations
+const alert = ref<Alert>({ // Alert message object
+    isVisible: false,
+    type: 'success',
+    message: '',
+});
+const isUserCreated = ref(false); // Flag to check if user registration was successful
+const errors = ref<Errors>({}); // Object to hold form validation errors
+
+const formHasErrors = computed((): boolean => { // Checks if there are any validation errors
+    return Object.keys(errors.value).length > 0;
+});
+
+const submitForm = (): void => { // Function to handle form submission
+    errors.value = {}; // Reset errors
+    validateForm(); // Validate form
+    if (!formHasErrors.value) { // If no errors, proceed to register
+        register();
+    }
+};
+
+const validateForm = (): void => { // Validates form data
+    const validationErrors: Errors = {}; // Temporary errors object
+    // Validation rules
+    if (!form.value.name) validationErrors.name = 'The name field is mandatory';
+    if (!form.value.email) validationErrors.email = 'The email field is mandatory';
+    else if (!/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(form.value.email)) validationErrors.email = 'Please insert a valid email';
+    if (!form.value.password) validationErrors.password = 'The password field is mandatory';
+    else if (form.value.password.length < 5) validationErrors.password = 'The password must be at least 5 characters';
+    if (form.value.password !== form.value.password_confirmation) validationErrors.password_confirmation = 'The password confirmation does not match';
+
+    errors.value = validationErrors; // Set component errors to temporary errors
+};
+
+const register = async (): Promise<void> => { // Async function to register user
+    const apiUrl = import.meta.env.VITE_BASEURI as string; // API URL from environment variable
+    isLoading.value = true; // Set loading state
+
+    // Reset alert state
+    alert.value = {
+        isVisible: false,
+        type: 'success',
+        message: '',
+    };
+    try {
+        // Get CSRF cookie for Laravel Sanctum
+        await axios.get(apiUrl + '/sanctum/csrf-cookie');
+        // Post registration data
+        await axios.post(`${apiUrl}/api/register`, form.value);
+        // On success, show success alert
+        alert.value = {
+            isVisible: true,
+            type: 'success',
+            message: 'User successfully created',
+        };
+
+        isUserCreated.value = true; // Set user created flag
+
+    } catch (err: unknown) { // Catch and handle errors
+        const axiosError = err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; appErrors?: string } } };
+        if (axiosError.response && axiosError.response.status === 422) {
+            // Extract validation errors from response
+            const { errors: responseErrors, appErrors } = axiosError.response.data || {};
+
+            // Convert errors to component format
+            const errorMessages: Errors = {};
+            if (responseErrors) {
+                for (const field in responseErrors) {
+                    errorMessages[field] = responseErrors[field][0];
+                }
+            }
+            errors.value = { ...errorMessages };
+
+            // Set alert for app-level errors
+            if (appErrors) {
+                alert.value = {
+                    isVisible: true,
+                    type: 'danger',
+                    message: appErrors,
+                };
+            }
+        } else { // Handle other errors
+            errors.value = { network: 'Something went wrong' };
+            alert.value = {
+                isVisible: true,
+                type: 'danger',
+                message: 'Something went wrong',
+            };
+        }
+    } finally {
+        isLoading.value = false; // Reset loading state
+    }
+};
 </script>
 
 <template>

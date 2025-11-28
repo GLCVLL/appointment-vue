@@ -1,16 +1,11 @@
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+interface Props {
+    type?: string;
+}
 
-export default defineComponent({
-    name: 'AppAlert',
-    props: {
-        type: {
-            type: String,
-            default: 'success',
-        },
-    }
+withDefaults(defineProps<Props>(), {
+    type: 'success'
 });
-
 </script>
 
 <template>

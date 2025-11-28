@@ -1,10 +1,5 @@
-<script lang="ts">
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-    name: 'AppLoader'
-});
-
+<script setup lang="ts">
+// No props or logic needed for this component
 </script>
 
 <template>

@@ -1,17 +1,6 @@
-<script lang="ts">
-import { defineComponent } from 'vue';
-import { default as auth, isLogged } from '@/store/auth';
+<script setup lang="ts">
+import { isLogged } from '@/store/auth';
 import LogoutButton from '@/components/LogoutButton.vue';
-
-export default defineComponent({
-  name: 'App',
-  components: { LogoutButton },
-  computed: {
-    auth,
-    isLogged,
-  },
-});
-
 </script>
 
 <template>
@@ -19,8 +8,8 @@ export default defineComponent({
     <nav class="d-flex align-items-center justify-content-between">
       <router-link :to="{ name: 'home' }" class="btn btn-secondary">Home</router-link>
       <div class="d-flex gap-2 align-items-center">
-        <router-link v-if="isLogged" :to="{ name: 'appointments' }">Appointments</router-link>
-        <router-link v-if="!isLogged" :to="{ name: 'login' }" class="btn btn-secondary">Login</router-link>
+        <router-link v-if="isLogged()" :to="{ name: 'appointments' }">Appointments</router-link>
+        <router-link v-if="!isLogged()" :to="{ name: 'login' }" class="btn btn-secondary">Login</router-link>
         <LogoutButton />
       </div>
     </nav>

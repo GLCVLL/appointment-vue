@@ -1,6 +1,8 @@
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { setUser, User } from '@/store/auth';
+import { useAxios } from '@/composables/useAxios';
 
 interface FormData {
     email: string;
@@ -13,53 +15,49 @@ interface Errors {
     generic?: string;
 }
 
-export default defineComponent({
-    name: 'LoginPage',
-    data() {
-        return {
-            form: {
-                email: '',
-                password: '',
-            } as FormData,
-            errors: {} as Errors,
-        };
-    },
-    computed: {
-        formHasErrors(): boolean {
-            return Object.keys(this.errors).length > 0;
-        }
-    },
-    methods: {
-        submitForm(): void {
-            this.errors = {};
-            this.validateForm();
-            if (!this.formHasErrors) {
-                this.login();
-            }
-        },
-        validateForm(): void {
-            const errors: Errors = {};
-            if (!this.form.email) errors.email = 'The email field is mandatory';
-            if (!this.form.password) errors.password = 'The password field is mandatory';
+const router = useRouter();
+const axios = useAxios();
 
-            this.errors = errors;
-        },
-        async login(): Promise<void> {
-            const apiUrl = import.meta.env.VITE_BASEURI as string;
-            try {
-                await this.$axios.get(apiUrl + '/sanctum/csrf-cookie');
-                const { data } = await this.$axios.post<User>(apiUrl + '/api/login', this.form);
-
-                localStorage.user = JSON.stringify(data);
-                setUser(data);
-                this.$router.push('/');
-            } catch (e) {
-                this.errors = { generic: 'Credentials are not valid' };
-            }
-        }
-    }
+const form = ref<FormData>({
+    email: '',
+    password: '',
 });
 
+const errors = ref<Errors>({});
+
+const formHasErrors = computed((): boolean => {
+    return Object.keys(errors.value).length > 0;
+});
+
+const submitForm = (): void => {
+    errors.value = {};
+    validateForm();
+    if (!formHasErrors.value) {
+        login();
+    }
+};
+
+const validateForm = (): void => {
+    const validationErrors: Errors = {};
+    if (!form.value.email) validationErrors.email = 'The email field is mandatory';
+    if (!form.value.password) validationErrors.password = 'The password field is mandatory';
+
+    errors.value = validationErrors;
+};
+
+const login = async (): Promise<void> => {
+    const apiUrl = import.meta.env.VITE_BASEURI as string;
+    try {
+        await axios.get(apiUrl + '/sanctum/csrf-cookie');
+        const { data } = await axios.post<User>(apiUrl + '/api/login', form.value);
+
+        localStorage.user = JSON.stringify(data);
+        setUser(data);
+        router.push('/');
+    } catch (e) {
+        errors.value = { generic: 'Credentials are not valid' };
+    }
+};
 </script>
 
 <template>

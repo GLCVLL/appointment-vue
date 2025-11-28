@@ -1,6 +1,7 @@
-<script lang="ts">
-import { defineComponent } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
 import AppLoader from '@/components/AppLoader.vue';
+import { useAxios } from '@/composables/useAxios';
 
 interface Service {
     id: number;
@@ -8,34 +9,26 @@ interface Service {
     [key: string]: unknown;
 }
 
-export default defineComponent({
-    name: 'HomePage',
-    data() {
-        return {
-            services: [] as Service[],
-            isLoading: false
-        };
-    },
-    components: {
-        AppLoader
-    },
-    methods: {
-        async getUsers(): Promise<void> {
-            const apiUrl = import.meta.env.VITE_BASEURI as string;
-            try {
-                this.isLoading = true;
-                const { data } = await this.$axios.get<{ services: Service[] }>(apiUrl + '/api/services');
-                this.services = data.services;
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.isLoading = false;
-            }
-        }
-    },
-    mounted() {
-        this.getUsers();
+const axios = useAxios();
+
+const services = ref<Service[]>([]);
+const isLoading = ref(false);
+
+const getUsers = async (): Promise<void> => {
+    const apiUrl = import.meta.env.VITE_BASEURI as string;
+    try {
+        isLoading.value = true;
+        const { data } = await axios.get<{ services: Service[] }>(apiUrl + '/api/services');
+        services.value = data.services;
+    } catch (e) {
+        console.error(e);
+    } finally {
+        isLoading.value = false;
     }
+};
+
+onMounted(() => {
+    getUsers();
 });
 </script>
 
