@@ -67,6 +67,12 @@ const PinkPreset = definePreset(Aura, {
 app.use(PrimeVue, {
   theme: {
     preset: PinkPreset,
+    options: {
+      cssLayer: {
+        name: "primevue",
+        order: "theme, base, primevue",
+      },
+    },
   },
 });
 

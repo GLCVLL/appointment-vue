@@ -1,15 +1,16 @@
 @import "tailwindcss";
+@import "tailwindcss-primeui";
 
 :root {
-  --p-primary-50: #fdf2f8;
-  --p-primary-100: #fce7f3;
-  --p-primary-200: #fbcfe8;
-  --p-primary-300: #f9a8d4;
-  --p-primary-400: #f472b6;
-  --p-primary-500: #ec4899;
-  --p-primary-600: #db2777;
-  --p-primary-700: #be185d;
-  --p-primary-800: #9f1239;
-  --p-primary-900: #831843;
+  --p-primary-50: #faf7f8;
+  --p-primary-100: #f5eef0;
+  --p-primary-200: #e8d5d9;
+  --p-primary-300: #d9b8bd;
+  --p-primary-400: #c9999e;
+  --p-primary-500: #b8898e;
+  --p-primary-600: #a67278;
+  --p-primary-700: #8b5d62;
+  --p-primary-800: #6d474b;
+  --p-primary-900: #4a3032;
   --p-primary-950: #500724;
 }
