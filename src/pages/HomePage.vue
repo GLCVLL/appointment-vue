@@ -1,35 +1,42 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import AppLoader from '@/components/AppLoader.vue';
-export default {
+
+interface Service {
+    id: number;
+    name: string;
+    [key: string]: unknown;
+}
+
+export default defineComponent({
     name: 'HomePage',
     data() {
         return {
-            services: [],
+            services: [] as Service[],
             isLoading: false
-        }
+        };
     },
     components: {
         AppLoader
     },
     methods: {
-        async getUsers() {
-            const apiUrl = import.meta.env.VITE_BASEURI;
+        async getUsers(): Promise<void> {
+            const apiUrl = import.meta.env.VITE_BASEURI as string;
             try {
                 this.isLoading = true;
-                const { data } = await this.$axios.get(apiUrl + '/api/services');
+                const { data } = await this.$axios.get<{ services: Service[] }>(apiUrl + '/api/services');
                 this.services = data.services;
             } catch (e) {
                 console.error(e);
             } finally {
                 this.isLoading = false;
             }
-
         }
     },
     mounted() {
         this.getUsers();
     }
-}
+});
 </script>
 
 <template>

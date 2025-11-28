@@ -1,14 +1,16 @@
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { default as auth, isLogged } from '@/store/auth';
 import LogoutButton from '@/components/LogoutButton.vue';
-export default {
+
+export default defineComponent({
   name: 'App',
   components: { LogoutButton },
   computed: {
     auth,
     isLogged,
   },
-}
+});
 
 </script>
 

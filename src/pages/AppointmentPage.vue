@@ -1,62 +1,103 @@
-<script>
-import { getUser } from '@/store/auth.js';
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { getUser } from '@/store/auth';
 import AppLoader from '@/components/AppLoader.vue';
 import AppAlert from '@/components/AppAlert.vue';
-export default {
+
+interface Service {
+    id: number;
+    name: string;
+    duration: string;
+    [key: string]: unknown;
+}
+
+interface Slot {
+    hour: string;
+    status: string;
+    [key: string]: unknown;
+}
+
+interface SlotDay {
+    date: string;
+    slots: Slot[];
+    [key: string]: unknown;
+}
+
+interface Alert {
+    isVisible: boolean;
+    type: string;
+    message: string;
+}
+
+interface AppointmentForm {
+    date: string;
+    start_time: string;
+    notes: string;
+    services: number[];
+}
+
+interface Errors {
+    [key: string]: string;
+}
+
+export default defineComponent({
     name: 'AppointmentPage',
 
     // Data properties for the component
     data() {
         return {
-            userId: null,
-            services: [],        // Stores services data
-            slotDays: [],        // Stores available slot days
-            closedDays: [],      // Stores closed days
-            timeArray: [],       // Stores available time slots
-            errors: {},
+            userId: null as number | null,
+            services: [] as Service[],        // Stores services data
+            slotDays: [] as SlotDay[],        // Stores available slot days
+            closedDays: [] as string[],      // Stores closed days
+            timeArray: [] as string[],       // Stores available time slots
+            errors: {} as Errors,
             isLoading: false,
             alert: {
                 isVisible: false,
                 type: 'success',
                 message: '',
-            },
+            } as Alert,
             appointmentForm: {   // Form data for appointment
                 date: '',        // Selected date for the appointment
                 start_time: '',   // Selected start time for the appointment
                 notes: '',       // Additional notes for the appointment
                 services: [],    // Selected services for the appointment
-            },
+            } as AppointmentForm,
         };
     },
     components: {
         AppLoader, AppAlert,
     },
     computed: {
-        selectedDuration() {
+        selectedDuration(): number {
             let selectedDuration = 0;
             // Calculate total duration of selected services
             this.appointmentForm.services.forEach(serviceId => {
-                const durationStr = this.services.find(service => service.id === serviceId).duration
-                const [hours, minutes, seconds] = durationStr.split(':').map(Number);
-                selectedDuration += hours * 60 + minutes + Math.round(seconds / 60);
+                const service = this.services.find(service => service.id === serviceId);
+                if (service) {
+                    const durationStr = service.duration;
+                    const [hours, minutes, seconds] = durationStr.split(':').map(Number);
+                    selectedDuration += hours * 60 + minutes + Math.round(seconds / 60);
+                }
             });
             return selectedDuration;
         },
-        formHasErrors() {
-            return Object.keys(this.errors).length;
+        formHasErrors(): boolean {
+            return Object.keys(this.errors).length > 0;
         }
     },
 
     methods: {
         // Updates available booking hours based on selected services and date
-        updateBookingHours() {
+        updateBookingHours(): void {
             const slotDuration = 30; // Duration of each time slot in minutes
             const selectedDate = this.appointmentForm.date;
 
             this.timeArray = []; // Reset available time slots
 
             // Skip if the selected date is a closed day
-            if (this.closedDays.includes(selectedDate)) return
+            if (this.closedDays.includes(selectedDate)) return;
 
             // Calculate available time slots based on service duration
             const selectedSlotsNumber = this.selectedDuration / slotDuration;
@@ -68,13 +109,13 @@ export default {
                             for (let i = 1; i < selectedSlotsNumber; i++) {
                                 if (idx + i >= slotDay.slots.length || slotDay.slots[idx + i].status === 'booked') {
                                     isAvailable = false;
-                                };
+                                }
                             }
                             if (isAvailable) {
-                                this.timeArray.push(slot.hour)
+                                this.timeArray.push(slot.hour);
                             }
                         }
-                    })
+                    });
                 }
             });
 
@@ -85,10 +126,10 @@ export default {
         },
 
         // Fetches slot days data from the server
-        async fetchSlotDays() {
+        async fetchSlotDays(): Promise<void> {
             try {
-                const apiUrl = import.meta.env.VITE_BASEURI;
-                const { data } = await this.$axios.get(`${apiUrl}/api/booking-hours`);
+                const apiUrl = import.meta.env.VITE_BASEURI as string;
+                const { data } = await this.$axios.get<{ slotDays: SlotDay[]; closedDays: string[] }>(`${apiUrl}/api/booking-hours`);
                 this.slotDays = data.slotDays;
                 this.closedDays = data.closedDays;
             } catch (error) {
@@ -97,11 +138,11 @@ export default {
         },
 
         // Fetches services data from the server
-        async fetchServices() {
+        async fetchServices(): Promise<void> {
             try {
-                const apiUrl = import.meta.env.VITE_BASEURI;
+                const apiUrl = import.meta.env.VITE_BASEURI as string;
                 this.isLoading = true;
-                const { data } = await this.$axios.get(`${apiUrl}/api/services`);
+                const { data } = await this.$axios.get<{ services: Service[] }>(`${apiUrl}/api/services`);
                 this.services = data.services;
             } catch (error) {
                 console.error("Error loading data:", error);
@@ -110,8 +151,8 @@ export default {
             }
         },
 
-        validateAppointmentForm() {
-            const errors = {};
+        validateAppointmentForm(): void {
+            const errors: Errors = {};
             if (!this.appointmentForm.date) errors.date = 'The date field is mandatory';
             if (!(/^\d{4}-\d{2}-\d{2}$/.test(this.appointmentForm.date))) errors.date = 'Insert a valide date';
             if (!this.appointmentForm.start_time) errors.start_time = 'The start time field is mandatory';
@@ -121,16 +162,16 @@ export default {
         },
 
         // Submits the appointment form
-        submitForm() {
+        submitForm(): void {
             this.errors = {};
             this.validateAppointmentForm();
-            if (!this.formHasErrors) {
+            if (!this.formHasErrors && this.userId) {
                 // calculate end_time string
                 const selectedStartTime = new Date(this.appointmentForm.date + 'T' + this.appointmentForm.start_time);
                 selectedStartTime.setMinutes(selectedStartTime.getMinutes() + this.selectedDuration);
                 const endTimeString = selectedStartTime.toTimeString().split(' ')[0].substring(0, 5);
 
-                const apiUrl = import.meta.env.VITE_BASEURI;
+                const apiUrl = import.meta.env.VITE_BASEURI as string;
                 const payload = {
                     user_id: this.userId,
                     services: this.appointmentForm.services,
@@ -148,8 +189,7 @@ export default {
                     message: '',
                 };
 
-                this.$axios.post(`${apiUrl}/api/appointments`, payload).then(response => {
-
+                this.$axios.post(`${apiUrl}/api/appointments`, payload).then(() => {
                     this.alert = {
                         isVisible: true,
                         type: 'success',
@@ -166,19 +206,23 @@ export default {
                         notes: '',
                         services: [],
                     };
-                }).catch(err => {
+                }).catch((err: unknown) => {
                     console.log(err);
                     // Backend Validation Error
-                    if (err.response && err.response.status === 400) {
-
+                    const axiosError = err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; appErrors?: string } } };
+                    if (axiosError.response && axiosError.response.status === 400) {
                         // Get Errors
-                        const { errors, appErrors } = err.response.data;
+                        const { errors, appErrors } = axiosError.response.data || {};
 
                         // Reset Messages
-                        const errorMessages = {};
+                        const errorMessages: Errors = {};
 
                         // Set Error Messages
-                        for (let field in errors) errorMessages[field] = errors[field][0];
+                        if (errors) {
+                            for (const field in errors) {
+                                errorMessages[field] = errors[field][0];
+                            }
+                        }
                         this.errors = { ...errorMessages };
 
                         // Set AppAlert
@@ -191,7 +235,7 @@ export default {
                         }
                     } else {
                         // Other Errors
-                        this.errors = { network: 'Something went wrong' }
+                        this.errors = { network: 'Something went wrong' };
                         this.alert = {
                             isVisible: true,
                             type: 'danger',
@@ -200,7 +244,7 @@ export default {
                     }
                 }).then(() => {
                     this.isLoading = false;
-                })
+                });
             }
         }
     },
@@ -209,9 +253,12 @@ export default {
     mounted() {
         this.fetchServices();
         this.fetchSlotDays();
-        this.userId = getUser().id;
+        const user = getUser();
+        if (user) {
+            this.userId = user.id;
+        }
     }
-};
+});
 </script>
 
 <template>

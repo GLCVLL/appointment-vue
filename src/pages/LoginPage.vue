@@ -1,45 +1,54 @@
-<script>
-import { setUser } from '@/store/auth';
+<script lang="ts">
+import { defineComponent } from 'vue';
+import { setUser, User } from '@/store/auth';
 
+interface FormData {
+    email: string;
+    password: string;
+}
 
-export default {
+interface Errors {
+    email?: string;
+    password?: string;
+    generic?: string;
+}
+
+export default defineComponent({
     name: 'LoginPage',
     data() {
         return {
             form: {
                 email: '',
                 password: '',
-            },
-            errors: {
-
-            },
+            } as FormData,
+            errors: {} as Errors,
         };
     },
     computed: {
-        formHasErrors() {
-            return Object.keys(this.errors).length;
+        formHasErrors(): boolean {
+            return Object.keys(this.errors).length > 0;
         }
     },
     methods: {
-        submitForm() {
+        submitForm(): void {
             this.errors = {};
             this.validateForm();
             if (!this.formHasErrors) {
                 this.login();
             }
         },
-        validateForm() {
-            const errors = {};
+        validateForm(): void {
+            const errors: Errors = {};
             if (!this.form.email) errors.email = 'The email field is mandatory';
             if (!this.form.password) errors.password = 'The password field is mandatory';
 
             this.errors = errors;
         },
-        async login() {
-            const apiUrl = import.meta.env.VITE_BASEURI;
+        async login(): Promise<void> {
+            const apiUrl = import.meta.env.VITE_BASEURI as string;
             try {
                 await this.$axios.get(apiUrl + '/sanctum/csrf-cookie');
-                const { data } = await this.$axios.post(apiUrl + '/api/login', this.form);
+                const { data } = await this.$axios.post<User>(apiUrl + '/api/login', this.form);
 
                 localStorage.user = JSON.stringify(data);
                 setUser(data);
@@ -49,7 +58,7 @@ export default {
             }
         }
     }
-}
+});
 
 </script>
 
@@ -58,7 +67,7 @@ export default {
         <h1>Login Page</h1>
 
         <div v-if="errors.generic" class="alert alert-danger">
-            {{ this.errors.generic }}
+            {{ errors.generic }}
         </div>
         <section>
             <div class="mb-3">

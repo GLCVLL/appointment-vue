@@ -1,0 +1,10 @@
+import { NavigationGuardNext, RouteLocationNormalized } from 'vue-router';
+import { isLogged } from '@/store/auth';
+
+// if you are logged
+
+export default (_to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext): void => {
+    if (isLogged()) next();
+    else next({ name: 'login' });
+};
+

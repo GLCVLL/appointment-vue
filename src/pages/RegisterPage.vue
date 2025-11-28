@@ -1,9 +1,27 @@
-<script>
+<script lang="ts">
 // Importing necessary components
+import { defineComponent } from 'vue';
 import AppAlert from '@/components/AppAlert.vue';
 import AppLoader from '@/components/AppLoader.vue';
 
-export default {
+interface FormData {
+    name: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+}
+
+interface Alert {
+    isVisible: boolean;
+    type: string;
+    message: string;
+}
+
+interface Errors {
+    [key: string]: string;
+}
+
+export default defineComponent({
     name: 'RegisterPage',
     data() {
         return {
@@ -12,35 +30,35 @@ export default {
                 email: '',
                 password: '',
                 password_confirmation: '',
-            },
+            } as FormData,
             isLoading: false, // Loading state for async operations
             alert: { // Alert message object
                 isVisible: false,
                 type: 'success',
                 message: '',
-            },
+            } as Alert,
             isUserCreated: false, // Flag to check if user registration was successful
-            errors: {}, // Object to hold form validation errors
+            errors: {} as Errors, // Object to hold form validation errors
         };
     },
     components: {
         AppLoader, AppAlert,
     },
     computed: {
-        formHasErrors() { // Checks if there are any validation errors
-            return Object.keys(this.errors).length;
+        formHasErrors(): boolean { // Checks if there are any validation errors
+            return Object.keys(this.errors).length > 0;
         }
     },
     methods: {
-        submitForm() { // Function to handle form submission
+        submitForm(): void { // Function to handle form submission
             this.errors = {}; // Reset errors
             this.validateForm(); // Validate form
             if (!this.formHasErrors) { // If no errors, proceed to register
                 this.register();
             }
         },
-        validateForm() { // Validates form data
-            const errors = {}; // Temporary errors object
+        validateForm(): void { // Validates form data
+            const errors: Errors = {}; // Temporary errors object
             // Validation rules
             if (!this.form.name) errors.name = 'The name field is mandatory';
             if (!this.form.email) errors.email = 'The email field is mandatory';
@@ -51,8 +69,8 @@ export default {
 
             this.errors = errors; // Set component errors to temporary errors
         },
-        async register() { // Async function to register user
-            const apiUrl = import.meta.env.VITE_BASEURI; // API URL from environment variable
+        async register(): Promise<void> { // Async function to register user
+            const apiUrl = import.meta.env.VITE_BASEURI as string; // API URL from environment variable
             this.isLoading = true; // Set loading state
 
             // Reset alert state
@@ -75,14 +93,19 @@ export default {
 
                 this.isUserCreated = true; // Set user created flag
 
-            } catch (err) { // Catch and handle errors
-                if (err.response && err.response.status === 422) {
+            } catch (err: unknown) { // Catch and handle errors
+                const axiosError = err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; appErrors?: string } } };
+                if (axiosError.response && axiosError.response.status === 422) {
                     // Extract validation errors from response
-                    const { errors, appErrors } = err.response.data;
+                    const { errors, appErrors } = axiosError.response.data || {};
 
                     // Convert errors to component format
-                    const errorMessages = {};
-                    for (let field in errors) errorMessages[field] = errors[field][0];
+                    const errorMessages: Errors = {};
+                    if (errors) {
+                        for (const field in errors) {
+                            errorMessages[field] = errors[field][0];
+                        }
+                    }
                     this.errors = { ...errorMessages };
 
                     // Set alert for app-level errors
@@ -94,7 +117,7 @@ export default {
                         };
                     }
                 } else { // Handle other errors
-                    this.errors = { network: 'Something went wrong' }
+                    this.errors = { network: 'Something went wrong' };
                     this.alert = {
                         isVisible: true,
                         type: 'danger',
@@ -106,7 +129,7 @@ export default {
             }
         }
     },
-};
+});
 </script>
 
 <template>
