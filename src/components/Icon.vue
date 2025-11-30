@@ -16,7 +16,7 @@ const props = defineProps({
 const iconsMap = {
   user: "person",
 } as const;
-type IconName = keyof typeof iconsMap;
+export type IconName = keyof typeof iconsMap;
 
 const iconSize = computed(() => {
   if (typeof props.size === "number") {
