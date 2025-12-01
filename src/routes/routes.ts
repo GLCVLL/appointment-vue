@@ -27,6 +27,11 @@ const routes: RouteRecordRaw[] = [
     name: "appointments",
     beforeEnter: auth.user,
   },
+  {
+    path: "/privacy-policy",
+    component: () => import("@/pages/privacyPolicy/_page.vue"),
+    name: "privacyPolicy",
+  },
 ];
 
 const router = createRouter({
