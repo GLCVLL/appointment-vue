@@ -1,49 +1,29 @@
 <script setup lang="ts">
-import Menubar from "primevue/menubar";
-import { computed } from "vue";
-import { useRouter } from "vue-router";
-import { isLogged } from "@/store/auth";
 import UserProfile from "@/components/UserProfile.vue";
 import AppLogo from "@/components/AppLogo.vue";
+import Button from "@/components/Button.vue";
 
-// DATA
-const router = useRouter();
-
-const items = computed(() => {
-  const menuItems = [
-    {
-      label: "Home",
-      command: () => {
-        router.push({ name: "home" });
-      },
-    },
-  ];
-
-  if (isLogged()) {
-    menuItems.push({
-      label: "Appointments",
-      command: () => {
-        router.push({ name: "appointments" });
-      },
-    });
-  }
-
-  return menuItems;
+// EMITS
+const emit = defineEmits({
+  menuToggle: () => true,
 });
+
+// HANDLERS
+const handleMenuToggle = (): void => {
+  emit("menuToggle");
+};
 </script>
 
 <template>
-  <Menubar
-    :model="items"
-    class="bg-primary-200 text-primary-800 border-none rounded-none h-16"
+  <div
+    class="bg-primary-200 text-primary-800 border-none rounded-none h-16 flex items-center justify-between px-4"
   >
-    <template #start>
+    <div class="flex items-center gap-4">
+      <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
       <AppLogo />
-    </template>
-    <template #end>
-      <div class="flex gap-2 align-items-center">
-        <UserProfile />
-      </div>
-    </template>
-  </Menubar>
+    </div>
+    <div class="flex gap-2 align-items-center">
+      <UserProfile />
+    </div>
+  </div>
 </template>
