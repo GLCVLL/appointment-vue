@@ -7,6 +7,11 @@ const routes: RouteRecordRaw[] = [
     path: "/",
     component: () => import("@/pages/_page.vue"),
     name: "home",
+  },
+  {
+    path: "/dashboard",
+    component: () => import("@/pages/dashboard/_page.vue"),
+    name: "dashboard",
     beforeEnter: auth.user,
   },
   {
