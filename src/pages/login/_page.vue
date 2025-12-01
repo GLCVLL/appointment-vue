@@ -5,6 +5,7 @@ import { setUser, User } from "@/store/auth";
 import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
+import Button from "@/components/Button.vue";
 
 interface FormData {
   email: string;
@@ -69,45 +70,56 @@ const login = async (): Promise<void> => {
     <div class="flex justify-center items-center flex-1">
       <div class="w-full max-w-md">
         <Card title="Login">
-          <div v-if="errors.generic" class="alert alert-danger">
-            {{ errors.generic }}
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email address</label>
-            <input
-              type="email"
-              class="form-control"
-              :class="{ 'is-invalid': errors.email }"
-              id="email"
-              v-model.trim="form.email"
-            />
-            <div v-if="errors.email" class="invalid-feedback">
-              {{ errors.email }}
+          <form @submit.prevent="" novalidate class="flex flex-col gap-4">
+            <div v-if="errors.generic" class="alert alert-danger">
+              {{ errors.generic }}
             </div>
-          </div>
-          <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input
-              type="password"
-              class="form-control"
-              :class="{ 'is-invalid': errors.password }"
-              id="password"
-              v-model.trim="form.password"
-            />
-            <div v-if="errors.password" class="invalid-feedback">
-              {{ errors.password }}
+
+            <div class="flex flex-col gap-2">
+              <label for="email" class="text-sm">Email address</label>
+              <input
+                type="email"
+                class="bg-white p-2 rounded-md"
+                :class="{ 'is-invalid': errors.email }"
+                id="email"
+                v-model.trim="form.email"
+              />
+              <div v-if="errors.email" class="invalid-feedback">
+                {{ errors.email }}
+              </div>
             </div>
-          </div>
-          <button type="button" class="btn btn-primary" @click="submitForm">
-            Login
-          </button>
-          <!-- Register Page -->
-          <div class="mt-3">
-            <span>Not registered yet?</span>
-            <router-link to="/register" class="btn btn-secondary"
-              >Register Now</router-link
-            >
-          </div>
+
+            <div class="flex flex-col gap-2">
+              <label for="password" class="text-sm">Password</label>
+              <input
+                type="password"
+                class="bg-white p-2 rounded-md"
+                :class="{ 'is-invalid': errors.password }"
+                id="password"
+                v-model.trim="form.password"
+              />
+              <div v-if="errors.password" class="invalid-feedback">
+                {{ errors.password }}
+              </div>
+            </div>
+
+            <Button
+              label="Login"
+              theme="contrast"
+              icon="login"
+              @click="submitForm"
+            />
+
+            <!-- Register Page -->
+            <div class="mt-3 flex items-center gap-2 text-sm">
+              <span>Non hai un account?</span>
+              <RouterLink
+                to="/register"
+                class="text-primary-600 hover:text-primary-800"
+                >Registrati ora</RouterLink
+              >
+            </div>
+          </form>
         </Card>
       </div>
     </div>
