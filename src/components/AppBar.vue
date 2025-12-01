@@ -2,6 +2,10 @@
 import UserProfile from "@/components/UserProfile.vue";
 import AppLogo from "@/components/AppLogo.vue";
 import Button from "@/components/Button.vue";
+import { useRouter } from "vue-router";
+import { isLogged } from "@/store/auth";
+
+const router = useRouter();
 
 // EMITS
 const emit = defineEmits({
@@ -11,6 +15,14 @@ const emit = defineEmits({
 // HANDLERS
 const handleMenuToggle = (): void => {
   emit("menuToggle");
+};
+
+const goToLogin = (): void => {
+  router.push({ name: "login" });
+};
+
+const goToRegister = (): void => {
+  router.push({ name: "register" });
 };
 </script>
 
@@ -22,8 +34,14 @@ const handleMenuToggle = (): void => {
       <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
       <AppLogo />
     </div>
-    <div class="flex gap-2 align-items-center">
-      <UserProfile />
+    <div class="flex gap-2 items-center">
+      <div v-if="isLogged()">
+        <UserProfile />
+      </div>
+      <div v-else class="flex gap-2">
+        <Button label="Accedi" theme="primary" @click="goToLogin" />
+        <Button label="Registrati" theme="secondary" @click="goToRegister" />
+      </div>
     </div>
   </div>
 </template>
