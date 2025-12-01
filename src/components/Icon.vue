@@ -18,6 +18,9 @@ const iconsMap = {
   login: "login",
   logout: "logout",
   menu: "menu",
+  phone: "phone",
+  email: "email",
+  location: "location_on",
 } as const;
 export type IconName = keyof typeof iconsMap;
 
