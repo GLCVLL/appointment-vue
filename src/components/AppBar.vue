@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import Menubar from "primevue/menubar";
-import Button from "primevue/button";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
-import { isLogged, removeUser } from "@/store/auth";
-import { useAxios } from "@/composables/useAxios";
+import { isLogged } from "@/store/auth";
+import UserProfile from "@/components/UserProfile.vue";
+import AppLogo from "@/components/AppLogo.vue";
 
 // DATA
 const router = useRouter();
-const axios = useAxios();
 
 const items = computed(() => {
   const menuItems = [
@@ -31,36 +30,19 @@ const items = computed(() => {
 
   return menuItems;
 });
-
-// API
-const logout = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    await axios.delete(apiUrl + "/api/logout");
-    localStorage.removeItem("user");
-    removeUser();
-    router.push({ name: "login" });
-  } catch (e) {
-    console.error(e);
-  }
-};
 </script>
 
 <template>
-  <Menubar :model="items" class="bg-primary-500 border-none rounded-none h-16">
+  <Menubar
+    :model="items"
+    class="bg-primary-200 text-primary-800 border-none rounded-none h-16"
+  >
+    <template #start>
+      <AppLogo />
+    </template>
     <template #end>
       <div class="flex gap-2 align-items-center">
-        <Button
-          v-if="!isLogged()"
-          label="Login"
-          @click="router.push({ name: 'login' })"
-        />
-        <Button
-          v-if="isLogged()"
-          label="Logout"
-          severity="secondary"
-          @click="logout"
-        />
+        <UserProfile />
       </div>
     </template>
   </Menubar>
