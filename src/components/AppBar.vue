@@ -33,6 +33,22 @@ const goToRegister = (): void => {
     <div class="flex items-center gap-4">
       <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
       <AppLogo />
+      <ul class="hidden md:flex items-center gap-4">
+        <li>
+          <RouterLink
+            v-if="isLogged()"
+            to="/appointments"
+            class="text-primary-600 hover:text-primary-900 transition-colors"
+            >Prenota</RouterLink
+          >
+          <RouterLink
+            v-else
+            to="/login"
+            class="text-primary-600 hover:text-primary-900 transition-colors"
+            >Prenota</RouterLink
+          >
+        </li>
+      </ul>
     </div>
     <div class="flex gap-2 items-center">
       <div v-if="isLogged()">
