@@ -16,6 +16,7 @@ const props = defineProps({
 const iconsMap = {
   user: "person",
   login: "login",
+  logout: "logout",
 } as const;
 export type IconName = keyof typeof iconsMap;
 
