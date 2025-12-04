@@ -26,26 +26,43 @@ const handleMenuToggle = (): void => {
     class="border-none rounded-none h-16 flex items-center justify-between px-4"
   >
     <div class="flex items-center gap-4">
+      <!-- Logo -->
       <AppLogo />
-      <ul class="hidden md:flex items-center gap-4">
-        <li>
-          <RouterLink
-            v-if="isLogged()"
-            to="/appointments"
-            class="text-primary-600 hover:text-primary-900 transition-colors"
-            >Prenota</RouterLink
-          >
-          <RouterLink
-            v-else
-            to="/login"
-            class="text-primary-600 hover:text-primary-900 transition-colors"
-            >Prenota</RouterLink
-          >
-        </li>
-      </ul>
     </div>
     <div class="flex gap-2 items-center">
-      <div class="hidden md:block">
+      <div class="hidden md:flex gap-12">
+        <!-- Nav links -->
+        <ul class="hidden md:flex items-center gap-8">
+          <li>
+            <RouterLink
+              to="#"
+              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
+              >Servizi</RouterLink
+            >
+          </li>
+          <li>
+            <RouterLink
+              to="#"
+              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
+              >Galleria</RouterLink
+            >
+          </li>
+          <li>
+            <RouterLink
+              v-if="isLogged()"
+              to="/appointments"
+              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
+              >Prenota</RouterLink
+            >
+            <RouterLink
+              v-else
+              to="/login"
+              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
+              >Prenota</RouterLink
+            >
+          </li>
+        </ul>
+
         <div v-if="isLogged()">
           <UserProfile />
         </div>

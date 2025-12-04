@@ -65,51 +65,71 @@ watch(isDesktop, (isDesktopValue) => {
       <AppLogo v-else />
     </template>
 
-    <nav class="flex flex-col gap-6">
-      <RouterLink
-        to="/"
-        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-        @click="closeMenu"
-        >Home</RouterLink
-      >
-
-      <!-- Auth links -->
-      <template v-if="isLogged()">
+    <nav class="flex flex-col gap-12">
+      <div class="flex flex-col gap-6">
         <RouterLink
-          to="/appointments"
+          to="/"
           class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
           @click="closeMenu"
-          >Prenota</RouterLink
+          >Home</RouterLink
         >
         <RouterLink
           to="#"
           class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="logout"
-          >Logout</RouterLink
+          @click="closeMenu"
+          >Servizi</RouterLink
         >
-      </template>
+        <RouterLink
+          to="#"
+          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+          @click="closeMenu"
+          >Galleria</RouterLink
+        >
 
-      <!-- Guest links -->
-      <template v-else>
-        <RouterLink
-          to="/login"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="closeMenu"
-          >Prenota</RouterLink
-        >
-        <RouterLink
-          to="/login"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="closeMenu"
-          >Accedi</RouterLink
-        >
-        <RouterLink
-          to="/register"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="closeMenu"
-          >Registrati</RouterLink
-        >
-      </template>
+        <template v-if="isLogged()">
+          <RouterLink
+            to="/appointments"
+            class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+            @click="closeMenu"
+            >Prenota</RouterLink
+          >
+        </template>
+
+        <template v-else>
+          <RouterLink
+            to="/login"
+            class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+            @click="closeMenu"
+            >Prenota</RouterLink
+          >
+        </template>
+      </div>
+
+      <div class="flex flex-col gap-6">
+        <template v-if="isLogged()">
+          <RouterLink
+            to="#"
+            class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+            @click="logout"
+            >Logout</RouterLink
+          >
+        </template>
+
+        <template v-else>
+          <RouterLink
+            to="/login"
+            class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+            @click="closeMenu"
+            >Accedi</RouterLink
+          >
+          <RouterLink
+            to="/register"
+            class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+            @click="closeMenu"
+            >Registrati</RouterLink
+          >
+        </template>
+      </div>
     </nav>
   </Sidebar>
 </template>
