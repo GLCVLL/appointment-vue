@@ -4,10 +4,7 @@ import UserProfile from "@/components/UserProfile.vue";
 import AppLogo from "@/components/AppLogo.vue";
 import Button from "@/components/Button.vue";
 import MobileMenu from "@/components/MobileMenu.vue";
-import { RouterLink, useRouter } from "vue-router";
 import { isLogged } from "@/store/auth";
-
-const router = useRouter();
 
 // STATE
 const mobileMenuVisible = ref(false);
@@ -21,14 +18,6 @@ const emit = defineEmits({
 const handleMenuToggle = (): void => {
   mobileMenuVisible.value = true;
   emit("menuToggle");
-};
-
-const goToLogin = (): void => {
-  router.push({ name: "login" });
-};
-
-const goToRegister = (): void => {
-  router.push({ name: "register" });
 };
 </script>
 
@@ -56,14 +45,30 @@ const goToRegister = (): void => {
       </ul>
     </div>
     <div class="flex gap-2 items-center">
-      <div v-if="isLogged()">
-        <UserProfile />
+      <div class="hidden md:block">
+        <div v-if="isLogged()">
+          <UserProfile />
+        </div>
+        <div v-else class="flex gap-4">
+          <RouterLink
+            to="/login"
+            class="text-primary-600 hover:text-primary-900 transition-colors"
+            >Accedi</RouterLink
+          >
+          <RouterLink
+            to="/register"
+            class="text-primary-600 hover:text-primary-900 transition-colors"
+            >Registrati</RouterLink
+          >
+        </div>
       </div>
-      <div v-else class="hidden md:flex gap-2">
-        <Button label="Accedi" theme="primary" @click="goToLogin" />
-        <Button label="Registrati" theme="secondary" @click="goToRegister" />
-      </div>
-      <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
+
+      <Button
+        icon="menu"
+        @click="handleMenuToggle"
+        variant="text"
+        class="md:hidden"
+      />
     </div>
   </div>
 

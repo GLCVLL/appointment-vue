@@ -6,6 +6,14 @@ import { getUser, removeUser } from "@/store/auth";
 import { useAxios } from "@/composables/useAxios";
 import Dropdown, { type MenuItem } from "@/components/Dropdown.vue";
 
+const props = defineProps({
+  showDropdown: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+// DATA
 const router = useRouter();
 const axios = useAxios();
 
@@ -29,6 +37,7 @@ const menuItems = computed<MenuItem[]>(() => {
   ];
 });
 
+// HANDLERS
 const logout = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
@@ -44,14 +53,20 @@ const logout = async (): Promise<void> => {
 
 <template>
   <div class="flex items-center">
-    <Dropdown :items="menuItems">
+    <Dropdown v-if="showDropdown" :items="menuItems">
       <Avatar
-        v-if="user"
         :label="userInitials"
         shape="circle"
-        size="large"
-        class="cursor-pointer"
+        size="normal"
+        class="cursor-pointer bg-primary-700 text-white"
       />
     </Dropdown>
+    <Avatar
+      v-else
+      :label="userInitials"
+      shape="circle"
+      size="normal"
+      class="cursor-pointer bg-primary-700 text-white"
+    />
   </div>
 </template>

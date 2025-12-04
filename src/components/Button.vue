@@ -30,11 +30,14 @@ const props = defineProps({
     type: String as PropType<ButtonType>,
     default: "button",
   },
+  variant: {
+    type: String as PropType<"outlined" | "text" | "link">,
+  },
 });
 </script>
 
 <template>
-  <PrimeButton :severity="theme" :type="type" :label="label">
+  <PrimeButton :severity="theme" :type="type" :label="label" :variant="variant">
     <template v-if="icon" #icon>
       <Icon :name="icon" size="18px" />
     </template>

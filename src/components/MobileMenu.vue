@@ -3,9 +3,11 @@ import { watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
 import Sidebar from "primevue/sidebar";
 import AppLogo from "@/components/AppLogo.vue";
-import { isLogged } from "@/store/auth";
+import { isLogged, removeUser } from "@/store/auth";
+import UserProfile from "@/components/UserProfile.vue";
+import { useRouter } from "vue-router";
+import { useAxios } from "@/composables/useAxios";
 
-// PROPS
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -13,19 +15,32 @@ const props = defineProps({
   },
 });
 
-// EMITS
 const emits = defineEmits({
   "update:visible": (_value: boolean) => true,
   close: () => true,
 });
 
-// MEDIA QUERY - md breakpoint di Tailwind è 768px
+// DATA
+const router = useRouter();
+const axios = useAxios();
 const isDesktop = useMediaQuery("(min-width: 768px)");
 
 // HANDLERS
 const closeMenu = (): void => {
   emits("update:visible", false);
   emits("close");
+};
+
+const logout = async (): Promise<void> => {
+  const apiUrl = import.meta.env.VITE_BASEURI as string;
+  try {
+    await axios.delete(apiUrl + "/api/logout");
+    localStorage.removeItem("user");
+    removeUser();
+    router.push({ name: "home" });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 // Chiudi il menu quando passiamo a desktop
@@ -45,7 +60,8 @@ watch(isDesktop, (isDesktopValue) => {
     @hide="closeMenu"
   >
     <template #header>
-      <AppLogo />
+      <UserProfile v-if="isLogged()" :showDropdown="false" />
+      <AppLogo v-else />
     </template>
 
     <nav class="flex flex-col gap-6">
@@ -56,32 +72,43 @@ watch(isDesktop, (isDesktopValue) => {
         >Home</RouterLink
       >
 
-      <RouterLink
-        v-if="isLogged()"
-        to="/appointments"
-        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-        @click="closeMenu"
-        >Prenota</RouterLink
-      >
-      <RouterLink
-        v-else
-        to="/login"
-        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-        @click="closeMenu"
-        >Prenota</RouterLink
-      >
-      <RouterLink
-        to="/login"
-        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-        @click="closeMenu"
-        >Accedi</RouterLink
-      >
-      <RouterLink
-        to="/register"
-        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-        @click="closeMenu"
-        >Registrati</RouterLink
-      >
+      <!-- Auth links -->
+      <template v-if="isLogged()">
+        <RouterLink
+          to="/appointments"
+          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+          @click="closeMenu"
+          >Prenota</RouterLink
+        >
+        <RouterLink
+          to="/logout"
+          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+          @click.prevent="logout"
+          >Logout</RouterLink
+        >
+      </template>
+
+      <!-- Guest links -->
+      <template v-else>
+        <RouterLink
+          to="/login"
+          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+          @click="closeMenu"
+          >Prenota</RouterLink
+        >
+        <RouterLink
+          to="/login"
+          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+          @click="closeMenu"
+          >Accedi</RouterLink
+        >
+        <RouterLink
+          to="/register"
+          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+          @click="closeMenu"
+          >Registrati</RouterLink
+        >
+      </template>
     </nav>
   </Sidebar>
 </template>
