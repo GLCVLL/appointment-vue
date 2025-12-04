@@ -32,11 +32,24 @@ const toggleMenu = (event: Event): void => {
     <div @click="toggleMenu" class="cursor-pointer">
       <slot />
     </div>
-    <Menu ref="menu" :model="items" :popup="true" class="mt-2">
+    <Menu
+      ref="menu"
+      :model="items"
+      :popup="true"
+      class="mt-2 bg-white border-none"
+      :pt="{
+        itemContent: 'hover:bg-primary-100',
+      }"
+    >
       <template #item="{ item }">
         <div class="flex items-center gap-2 px-4 py-2 cursor-pointer">
-          <Icon v-if="item.icon" :name="item.icon as IconName" size="18px" />
-          <span>{{ item.label }}</span>
+          <Icon
+            v-if="item.icon"
+            :name="item.icon as IconName"
+            size="18px"
+            class="text-primary-500"
+          />
+          <span class="text-primary-500">{{ item.label }}</span>
         </div>
       </template>
     </Menu>
