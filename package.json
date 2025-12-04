@@ -12,6 +12,7 @@
   "dependencies": {
     "@primeuix/themes": "^2.0.1",
     "@tailwindcss/vite": "^4.1.17",
+    "@vueuse/core": "^14.1.0",
     "axios": "^1.13.2",
     "primevue": "^4.5.0",
     "tailwindcss": "^4.1.17",
@@ -28,7 +29,7 @@
   },
   "overrides": {
     "vite": {
-        "rollup": "npm:@rollup/wasm-node"
+      "rollup": "npm:@rollup/wasm-node"
     }
-}
+  }
 }

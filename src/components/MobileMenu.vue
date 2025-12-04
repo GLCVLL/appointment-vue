@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { watch } from "vue";
+import { useMediaQuery } from "@vueuse/core";
 import Sidebar from "primevue/sidebar";
 import AppLogo from "@/components/AppLogo.vue";
 import { isLogged } from "@/store/auth";
-
-const router = useRouter();
 
 // PROPS
 const props = defineProps({
@@ -16,9 +15,12 @@ const props = defineProps({
 
 // EMITS
 const emits = defineEmits({
-  "update:visible": (value: boolean) => true,
+  "update:visible": (_value: boolean) => true,
   close: () => true,
 });
+
+// MEDIA QUERY - md breakpoint di Tailwind è 768px
+const isDesktop = useMediaQuery("(min-width: 768px)");
 
 // HANDLERS
 const closeMenu = (): void => {
@@ -26,20 +28,12 @@ const closeMenu = (): void => {
   emits("close");
 };
 
-const goToAppointments = (): void => {
-  router.push({ name: "appointments" });
-  closeMenu();
-};
-
-const goToLogin = (): void => {
-  router.push({ name: "login" });
-  closeMenu();
-};
-
-const goToRegister = (): void => {
-  router.push({ name: "register" });
-  closeMenu();
-};
+// Chiudi il menu quando passiamo a desktop
+watch(isDesktop, (isDesktopValue) => {
+  if (isDesktopValue && props.visible) {
+    closeMenu();
+  }
+});
 </script>
 
 <template>
@@ -50,38 +44,44 @@ const goToRegister = (): void => {
     @update:visible="$emit('update:visible', $event)"
     @hide="closeMenu"
   >
-    <div class="flex flex-col h-full">
-      <div class="mb-12">
-        <AppLogo />
-      </div>
-      <nav class="flex flex-col gap-6">
-        <RouterLink
-          v-if="isLogged()"
-          to="/appointments"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="goToAppointments"
-          >Prenota</RouterLink
-        >
-        <RouterLink
-          v-else
-          to="/login"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="goToLogin"
-          >Prenota</RouterLink
-        >
-        <RouterLink
-          to="/login"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="goToLogin"
-          >Accedi</RouterLink
-        >
-        <RouterLink
-          to="/register"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="goToRegister"
-          >Registrati</RouterLink
-        >
-      </nav>
-    </div>
+    <template #header>
+      <AppLogo />
+    </template>
+
+    <nav class="flex flex-col gap-6">
+      <RouterLink
+        to="/"
+        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+        @click="closeMenu"
+        >Home</RouterLink
+      >
+
+      <RouterLink
+        v-if="isLogged()"
+        to="/appointments"
+        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+        @click="closeMenu"
+        >Prenota</RouterLink
+      >
+      <RouterLink
+        v-else
+        to="/login"
+        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+        @click="closeMenu"
+        >Prenota</RouterLink
+      >
+      <RouterLink
+        to="/login"
+        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+        @click="closeMenu"
+        >Accedi</RouterLink
+      >
+      <RouterLink
+        to="/register"
+        class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
+        @click="closeMenu"
+        >Registrati</RouterLink
+      >
+    </nav>
   </Sidebar>
 </template>

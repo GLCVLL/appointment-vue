@@ -23,10 +23,6 @@ const handleMenuToggle = (): void => {
   emit("menuToggle");
 };
 
-const closeMobileMenu = (): void => {
-  mobileMenuVisible.value = false;
-};
-
 const goToLogin = (): void => {
   router.push({ name: "login" });
 };
@@ -70,5 +66,6 @@ const goToRegister = (): void => {
       <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
     </div>
   </div>
-  <MobileMenu v-model:visible="mobileMenuVisible" @close="closeMobileMenu" />
+
+  <MobileMenu v-model:visible="mobileMenuVisible" />
 </template>
