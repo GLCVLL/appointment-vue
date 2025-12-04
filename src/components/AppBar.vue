@@ -28,10 +28,9 @@ const goToRegister = (): void => {
 
 <template>
   <div
-    class="bg-primary-200 text-primary-800 border-none rounded-none h-16 flex items-center justify-between px-4"
+    class="border-none rounded-none h-16 flex items-center justify-between px-4"
   >
     <div class="flex items-center gap-4">
-      <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
       <AppLogo />
       <ul class="hidden md:flex items-center gap-4">
         <li>
@@ -58,6 +57,7 @@ const goToRegister = (): void => {
         <Button label="Accedi" theme="primary" @click="goToLogin" />
         <Button label="Registrati" theme="secondary" @click="goToRegister" />
       </div>
+      <Button icon="menu" @click="handleMenuToggle" class="md:hidden" />
     </div>
   </div>
 </template>
