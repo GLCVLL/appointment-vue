@@ -38,6 +38,7 @@ const logout = async (): Promise<void> => {
     localStorage.removeItem("user");
     removeUser();
     router.push({ name: "home" });
+    closeMenu();
   } catch (e) {
     console.error(e);
   }
@@ -81,9 +82,9 @@ watch(isDesktop, (isDesktopValue) => {
           >Prenota</RouterLink
         >
         <RouterLink
-          to="/logout"
+          to="#"
           class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click.prevent="logout"
+          @click="logout"
           >Logout</RouterLink
         >
       </template>
