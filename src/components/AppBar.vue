@@ -42,13 +42,13 @@ const handleMenuToggle = (): void => {
         <!-- Nav links -->
         <ul class="hidden md:flex items-center gap-8">
           <li v-for="link in links" :key="link.url">
-            <RouterLink
-              :to="link.url"
+            <a
+              :href="link.url"
               class="text-primary-600 hover:text-primary-900 transition-colors"
             >
               <Icon v-if="link.icon" :name="link.icon" />
               {{ link.label }}
-            </RouterLink>
+            </a>
           </li>
         </ul>
 
@@ -78,5 +78,5 @@ const handleMenuToggle = (): void => {
     </div>
   </div>
 
-  <MobileMenu v-model:visible="mobileMenuVisible" />
+  <MobileMenu v-model:visible="mobileMenuVisible" :links="links" />
 </template>

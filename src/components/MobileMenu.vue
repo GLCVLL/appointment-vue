@@ -1,17 +1,22 @@
 <script setup lang="ts">
-import { watch } from "vue";
+import { PropType, watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
-import Sidebar from "primevue/sidebar";
+import Drawer from "primevue/drawer";
 import AppLogo from "@/components/AppLogo.vue";
 import { isLogged, removeUser } from "@/store/auth";
 import UserProfile from "@/components/UserProfile.vue";
 import { useRouter } from "vue-router";
 import { useAxios } from "@/composables/useAxios";
+import { Link } from "@/composables/useNavigation";
 
 const props = defineProps({
   visible: {
     type: Boolean,
     required: true,
+  },
+  links: {
+    type: Array as PropType<Link[]>,
+    default: () => [],
   },
 });
 
@@ -53,7 +58,7 @@ watch(isDesktop, (isDesktopValue) => {
 </script>
 
 <template>
-  <Sidebar
+  <Drawer
     :visible="visible"
     position="full"
     class="w-full bg-white text-primary-500"
@@ -67,40 +72,12 @@ watch(isDesktop, (isDesktopValue) => {
 
     <nav class="flex flex-col gap-12">
       <div class="flex flex-col gap-6">
-        <RouterLink
-          to="/"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="closeMenu"
-          >Home</RouterLink
-        >
-        <RouterLink
-          to="#"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="closeMenu"
-          >Servizi</RouterLink
-        >
-        <RouterLink
-          to="#"
-          class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-          @click="closeMenu"
-          >Galleria</RouterLink
-        >
-
-        <template v-if="isLogged()">
-          <RouterLink
-            to="/appointments"
+        <template v-for="link in links" :key="link.url">
+          <a
+            :href="link.url"
             class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
             @click="closeMenu"
-            >Prenota</RouterLink
-          >
-        </template>
-
-        <template v-else>
-          <RouterLink
-            to="/login"
-            class="text-primary-600 hover:text-primary-900 transition-colors text-xl font-medium"
-            @click="closeMenu"
-            >Prenota</RouterLink
+            >{{ link.label }}</a
           >
         </template>
       </div>
@@ -131,5 +108,5 @@ watch(isDesktop, (isDesktopValue) => {
         </template>
       </div>
     </nav>
-  </Sidebar>
+  </Drawer>
 </template>

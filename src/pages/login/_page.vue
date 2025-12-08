@@ -6,6 +6,7 @@ import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
+import { useNavigation } from "@/composables/useNavigation";
 
 interface FormData {
   email: string;
@@ -18,6 +19,8 @@ interface Errors {
   generic?: string;
 }
 
+// DATA
+const { authLinks } = useNavigation();
 const router = useRouter();
 const axios = useAxios();
 
@@ -32,6 +35,7 @@ const formHasErrors = computed((): boolean => {
   return Object.keys(errors.value).length > 0;
 });
 
+// HANDLERS
 const submitForm = (): void => {
   errors.value = {};
   validateForm();
@@ -66,7 +70,7 @@ const login = async (): Promise<void> => {
 </script>
 
 <template>
-  <PageLayout>
+  <PageLayout :links="authLinks">
     <div class="flex justify-center items-center flex-1">
       <div class="w-full max-w-md">
         <Card title="Login" class="m-4">

@@ -22,7 +22,15 @@ export const useNavigation = () => {
     },
   ];
 
+  const authLinks: Link[] = [
+    {
+      url: "/",
+      label: "Home",
+    },
+  ];
+
   return {
     homeLinks,
+    authLinks,
   };
 };
