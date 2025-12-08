@@ -80,12 +80,9 @@ const goToAppointments = (): void => {
           >
             Galleria
           </p>
-          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
-            I Miei Lavori
+          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-primary-500">
+            I Nostri Lavori
           </h2>
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-          </p>
         </div>
       </div>
       <GalleryCarousel />
@@ -100,12 +97,9 @@ const goToAppointments = (): void => {
           >
             Servizi
           </p>
-          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-800">
+          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-primary-500">
             Trattamenti per le Unghie
           </h2>
-          <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-          </p>
         </div>
 
         <div>
@@ -124,10 +118,10 @@ const goToAppointments = (): void => {
                   class="text-primary-600"
                 />
               </div>
-              <h3 class="text-2xl font-bold text-gray-800 mb-4">
+              <h3 class="text-2xl font-bold text-primary-500 mb-4">
                 {{ service.name }}
               </h3>
-              <p class="text-gray-600">
+              <p class="text-primary-500">
                 {{ service.description }}
               </p>
             </div>

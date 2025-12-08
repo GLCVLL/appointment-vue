@@ -1,21 +1,30 @@
 <script setup lang="ts">
+import Button from "@/components/Button.vue";
 import Card from "primevue/card";
+import { useRouter } from "vue-router";
 
 const props = defineProps({
   title: {
     type: String,
-    default: "Benvenuto",
+    default: "GC Nail Art",
   },
   description: {
     type: String,
-    default:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.",
+    default: "Trattamenti per le unghie con stile e qualità.",
   },
   imageUrl: {
     type: String,
     default: "https://picsum.photos/seed/jumbotron-hero/1920/1080",
   },
 });
+
+// DATA
+const router = useRouter();
+
+// HANDLERS
+const goToLogin = (): void => {
+  router.push({ name: "login" });
+};
 </script>
 
 <template>
@@ -33,9 +42,11 @@ const props = defineProps({
             >
               {{ title }}
             </h1>
-            <p class="text-xl md:text-2xl text-white">
+            <p class="text-xl md:text-2xl text-white mb-6">
               {{ description }}
             </p>
+
+            <Button label="Prenota Ora" theme="primary" @click="goToLogin" />
           </div>
         </template>
       </Card>
