@@ -23,7 +23,7 @@ const handleMenuToggle = (): void => {
 
 <template>
   <div
-    class="border-none rounded-none h-16 flex items-center justify-between px-4"
+    class="border-b border-primary-100 rounded-none h-16 flex items-center justify-between px-4"
   >
     <div class="flex items-center gap-4">
       <!-- Logo -->
