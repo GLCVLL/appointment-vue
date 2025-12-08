@@ -130,12 +130,12 @@ const goToAppointments = (): void => {
       </div>
     </section>
 
-    <!-- CTA Section - Booking -->
+    <!-- Booking Section -->
     <section class="bg-primary-50 py-16">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center">
-          <h2 class="text-3xl font-bold mb-4 text-primary-700">
-            Pronto a prenotare?
+          <h2 class="text-4xl md:text-5xl font-bold mb-4 text-primary-500">
+            Pronto a Prenotare?
           </h2>
           <p class="text-lg text-primary-600 mb-8">
             <span v-if="isLogged()">
