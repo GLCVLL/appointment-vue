@@ -29,7 +29,7 @@ const goToLogin = (): void => {
 
 <template>
   <section
-    class="jumbotron-section relative min-h-screen flex items-center justify-center"
+    class="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-fixed bg-no-repeat"
     :style="{ backgroundImage: `url(${imageUrl})` }"
   >
     <div class="absolute inset-0 bg-black/30"></div>
@@ -53,12 +53,3 @@ const goToLogin = (): void => {
     </div>
   </section>
 </template>
-
-<style scoped>
-.jumbotron-section {
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-}
-</style>
