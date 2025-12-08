@@ -5,31 +5,38 @@ import Carousel from "primevue/carousel";
 interface Slide {
   id: number;
   src: string;
+  alt: string;
 }
 
 const slides = ref<Slide[]>([
   {
     id: 1,
+    alt: "Image 1",
     src: "https://picsum.photos/seed/appointment-welcome/900/550",
   },
   {
     id: 2,
+    alt: "Image 2",
     src: "https://picsum.photos/seed/appointment-team/900/550",
   },
   {
     id: 3,
+    alt: "Image 3",
     src: "https://picsum.photos/seed/appointment-lounge/900/550",
   },
   {
     id: 4,
+    alt: "Image 4",
     src: "https://picsum.photos/seed/appointment-details/900/550",
   },
   {
     id: 5,
+    alt: "Image 5",
     src: "https://picsum.photos/seed/appointment-care/900/550",
   },
   {
     id: 6,
+    alt: "Image 6",
     src: "https://picsum.photos/seed/appointment-tech/900/550",
   },
 ]);
@@ -66,8 +73,8 @@ const responsiveOptions = [
   >
     <template #item="{ data }">
       <img
-        :src="data.image"
-        :alt="data.title"
+        :src="data.src"
+        :alt="data.alt"
         class="w-full h-64 object-cover"
         loading="lazy"
       />
