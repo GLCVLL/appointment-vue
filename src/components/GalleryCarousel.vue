@@ -11,33 +11,48 @@ interface Slide {
 const slides = ref<Slide[]>([
   {
     id: 1,
-    alt: "Image 1",
-    src: "https://picsum.photos/seed/appointment-welcome/900/550",
+    alt: "Lavoro unghie 1",
+    src: "/images/gallery-01.jpeg",
   },
   {
     id: 2,
-    alt: "Image 2",
-    src: "https://picsum.photos/seed/appointment-team/900/550",
+    alt: "Lavoro unghie 2",
+    src: "/images/gallery-02.jpeg",
   },
   {
     id: 3,
-    alt: "Image 3",
-    src: "https://picsum.photos/seed/appointment-lounge/900/550",
+    alt: "Lavoro unghie 3",
+    src: "/images/gallery-03.jpeg",
   },
   {
     id: 4,
-    alt: "Image 4",
-    src: "https://picsum.photos/seed/appointment-details/900/550",
+    alt: "Lavoro unghie 4",
+    src: "/images/gallery-04.jpeg",
   },
   {
     id: 5,
-    alt: "Image 5",
-    src: "https://picsum.photos/seed/appointment-care/900/550",
+    alt: "Lavoro unghie 5",
+    src: "/images/gallery-05.jpeg",
   },
   {
     id: 6,
-    alt: "Image 6",
-    src: "https://picsum.photos/seed/appointment-tech/900/550",
+    alt: "Lavoro unghie 6",
+    src: "/images/gallery-06.jpeg",
+  },
+  {
+    id: 7,
+    alt: "Lavoro unghie 7",
+    src: "/images/gallery-07.jpeg",
+  },
+  {
+    id: 8,
+    alt: "Lavoro unghie 8",
+    src: "/images/gallery-08.jpeg",
+  },
+  {
+    id: 9,
+    alt: "Lavoro unghie 9",
+    src: "/images/gallery-09.jpeg",
   },
 ]);
 
