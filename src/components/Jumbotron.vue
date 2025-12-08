@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Button from "@/components/Button.vue";
+import { useMediaQuery } from "@vueuse/core";
 import Card from "primevue/card";
 import { useRouter } from "vue-router";
 
@@ -20,6 +21,7 @@ const props = defineProps({
 
 // DATA
 const router = useRouter();
+const isDesktop = useMediaQuery("(min-width: 768px)");
 
 // HANDLERS
 const goToLogin = (): void => {
@@ -29,7 +31,13 @@ const goToLogin = (): void => {
 
 <template>
   <section
-    class="relative min-h-screen flex items-center justify-center bg-cover bg-center bg-fixed bg-no-repeat"
+    :class="[
+      'relative flex items-center justify-center bg-cover bg-center  bg-no-repeat',
+      {
+        'bg-fixed min-h-screen': isDesktop,
+        'h-96': !isDesktop,
+      },
+    ]"
     :style="{ backgroundImage: `url(${imageUrl})` }"
   >
     <div class="absolute inset-0 bg-black/30"></div>
