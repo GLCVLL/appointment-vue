@@ -170,5 +170,3 @@ const goToAppointments = (): void => {
     </section>
   </PageLayout>
 </template>
-
-<style></style>
