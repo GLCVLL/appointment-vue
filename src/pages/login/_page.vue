@@ -47,9 +47,9 @@ const submitForm = (): void => {
 const validateForm = (): void => {
   const validationErrors: Errors = {};
   if (!form.value.email)
-    validationErrors.email = "The email field is mandatory";
+    validationErrors.email = "Il campo email è obbligatorio";
   if (!form.value.password)
-    validationErrors.password = "The password field is mandatory";
+    validationErrors.password = "Il campo password è obbligatorio";
 
   errors.value = validationErrors;
 };
@@ -80,7 +80,7 @@ const login = async (): Promise<void> => {
             </div>
 
             <div class="flex flex-col gap-2">
-              <label for="email" class="text-sm">Email address</label>
+              <label for="email" class="text-sm">Email</label>
               <input
                 type="email"
                 class="bg-white p-2 rounded-md"

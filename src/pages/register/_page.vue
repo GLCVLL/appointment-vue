@@ -8,7 +8,8 @@ import Button from "@/components/Button.vue";
 import { useNavigation } from "@/composables/useNavigation";
 
 interface FormData {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phone_number: string;
   password: string;
@@ -25,7 +26,8 @@ const router = useRouter();
 const axios = useAxios();
 
 const form = ref<FormData>({
-  name: "",
+  first_name: "",
+  last_name: "",
   email: "",
   phone_number: "",
   password: "",
@@ -53,28 +55,32 @@ const validateForm = (): void => {
   // Validates form data
   const validationErrors: Errors = {};
   // Validation rules
-  if (!form.value.name) validationErrors.name = "The name field is mandatory";
+  if (!form.value.first_name)
+    validationErrors.first_name = "Il campo nome è obbligatorio";
+  if (!form.value.last_name)
+    validationErrors.last_name = "Il campo cognome è obbligatorio";
   if (!form.value.email)
-    validationErrors.email = "The email field is mandatory";
+    validationErrors.email = "Il campo email è obbligatorio";
   else if (
     !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(form.value.email)
   )
-    validationErrors.email = "Please insert a valid email";
+    validationErrors.email = "Inserisci un'email valida";
   if (!form.value.phone_number)
-    validationErrors.phone_number = "The phone number field is mandatory";
+    validationErrors.phone_number =
+      "Il campo numero di telefono è obbligatorio";
   else if (
     !/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/.test(
       form.value.phone_number
     )
   )
-    validationErrors.phone_number = "Please insert a valid phone number";
+    validationErrors.phone_number = "Inserisci un numero di telefono valido";
   if (!form.value.password)
-    validationErrors.password = "The password field is mandatory";
+    validationErrors.password = "Il campo password è obbligatorio";
   else if (form.value.password.length < 5)
-    validationErrors.password = "The password must be at least 5 characters";
+    validationErrors.password = "La password deve essere di almeno 5 caratteri";
   if (form.value.password !== form.value.password_confirmation)
     validationErrors.password_confirmation =
-      "The password confirmation does not match";
+      "La conferma della password non corrisponde";
 
   errors.value = validationErrors; // Set component errors to temporary errors
 };
@@ -85,7 +91,13 @@ const register = async (): Promise<void> => {
 
   try {
     await axios.get(apiUrl + "/sanctum/csrf-cookie");
-    await axios.post(`${apiUrl}/api/register`, form.value);
+    // Concatenate first_name and last_name with a space for the backend
+    const { first_name, last_name, ...rest } = form.value;
+    const payload = {
+      ...rest,
+      name: `${first_name} ${last_name}`.trim(),
+    };
+    await axios.post(`${apiUrl}/api/register`, payload);
     isUserCreated.value = true;
   } catch (err: unknown) {
     const axiosError = err as {
@@ -110,7 +122,7 @@ const register = async (): Promise<void> => {
         errors.value.generic = appErrors;
       }
     } else {
-      errors.value.generic = "Something went wrong";
+      errors.value.generic = "Qualcosa è andato storto";
     }
   } finally {
     isLoading.value = false;
@@ -122,7 +134,7 @@ const register = async (): Promise<void> => {
   <PageLayout :links="authLinks">
     <div class="flex justify-center items-center flex-1">
       <div class="w-full max-w-md">
-        <Card v-if="!isUserCreated" title="Register" class="m-4">
+        <Card v-if="!isUserCreated" title="Registrazione" class="m-4">
           <form
             @submit.prevent="submitForm"
             novalidate
@@ -133,24 +145,40 @@ const register = async (): Promise<void> => {
             </div>
 
             <div class="flex flex-col gap-2">
-              <label for="name" class="text-sm">
-                Name <span class="text-red-600">*</span>
+              <label for="first_name" class="text-sm">
+                Nome <span class="text-red-600">*</span>
               </label>
               <input
                 type="text"
                 class="bg-white p-2 rounded-md"
-                :class="{ 'is-invalid': errors.name }"
-                id="name"
-                v-model.trim="form.name"
+                :class="{ 'is-invalid': errors.first_name }"
+                id="first_name"
+                v-model.trim="form.first_name"
               />
-              <div v-if="errors.name" class="text-red-600 text-xs mt-1">
-                {{ errors.name }}
+              <div v-if="errors.first_name" class="text-red-600 text-xs mt-1">
+                {{ errors.first_name }}
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <label for="last_name" class="text-sm">
+                Cognome <span class="text-red-600">*</span>
+              </label>
+              <input
+                type="text"
+                class="bg-white p-2 rounded-md"
+                :class="{ 'is-invalid': errors.last_name }"
+                id="last_name"
+                v-model.trim="form.last_name"
+              />
+              <div v-if="errors.last_name" class="text-red-600 text-xs mt-1">
+                {{ errors.last_name }}
               </div>
             </div>
 
             <div class="flex flex-col gap-2">
               <label for="email" class="text-sm">
-                Email address <span class="text-red-600">*</span>
+                Indirizzo email <span class="text-red-600">*</span>
               </label>
               <input
                 type="email"
@@ -166,7 +194,7 @@ const register = async (): Promise<void> => {
 
             <div class="flex flex-col gap-2">
               <label for="phone_number" class="text-sm">
-                Phone number <span class="text-red-600">*</span>
+                Numero di telefono <span class="text-red-600">*</span>
               </label>
               <input
                 type="tel"
@@ -198,7 +226,7 @@ const register = async (): Promise<void> => {
 
             <div class="flex flex-col gap-2">
               <label for="password_confirmation" class="text-sm">
-                Confirm Password <span class="text-red-600">*</span>
+                Conferma password <span class="text-red-600">*</span>
               </label>
               <input
                 type="password"
@@ -216,7 +244,7 @@ const register = async (): Promise<void> => {
             </div>
 
             <Button
-              label="Register"
+              label="Registrati"
               theme="contrast"
               icon="user"
               @click="submitForm"
