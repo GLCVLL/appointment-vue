@@ -112,9 +112,9 @@ import PageLayout from "@/components/PageLayout.vue";
             ><br />
             Telefono:
             <a
-              href="tel:+393505668768"
+              href="tel:+393505668766"
               class="text-primary-600 hover:text-primary-800 underline"
-              >+39 350 56 68768</a
+              >+39 350 56 68766</a
             >
           </p>
         </section>
