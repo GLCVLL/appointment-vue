@@ -35,22 +35,22 @@ const goToLogin = (): void => {
       'relative flex items-center justify-center bg-cover bg-center  bg-no-repeat',
       {
         'bg-fixed min-h-screen': isDesktop,
-        'h-96': !isDesktop,
+        'h-[500px]': !isDesktop,
       },
     ]"
     :style="{ backgroundImage: `url(${imageUrl})` }"
   >
     <div class="absolute inset-0 bg-black/30"></div>
     <div class="relative z-10 w-full max-w-4xl px-4">
-      <Card class="bg-white/20 backdrop-blur-md border-none shadow-2xl">
+      <Card class="bg-white/20 backdrop-blur-md border-none shadow-2xl m-8">
         <template #content>
-          <div class="text-center py-8 px-6">
+          <div class="text-center md:py-8 md:px-6">
             <h1
-              class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6"
+              class="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-4 md:mb-6"
             >
               {{ title }}
             </h1>
-            <p class="text-xl md:text-2xl text-white mb-6">
+            <p class="text-xl md:text-2xl text-white mb-4 md:mb-6">
               {{ description }}
             </p>
 
