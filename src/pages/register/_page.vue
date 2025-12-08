@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
 import { useNavigation } from "@/composables/useNavigation";
+import z from "zod";
 
 interface FormData {
   first_name: string;
@@ -25,6 +26,30 @@ const { authLinks } = useNavigation();
 const router = useRouter();
 const axios = useAxios();
 
+const schema = z
+  .object({
+    first_name: z.string().min(1, "Il campo nome è obbligatorio"),
+    last_name: z.string().min(1, "Il campo cognome è obbligatorio"),
+    email: z.email("Email non valida").min(1, "Il campo email è obbligatorio"),
+    phone_number: z
+      .string()
+      .min(1, "Il campo numero di telefono è obbligatorio")
+      .regex(
+        /^\+?[0-9]{8,15}$/,
+        "Inserisci un numero di telefono valido (solo cifre, opzionalmente con + all'inizio)"
+      ),
+    password: z
+      .string()
+      .min(5, "La password deve essere di almeno 5 caratteri"),
+    password_confirmation: z
+      .string()
+      .min(1, "Il campo conferma password è obbligatorio"),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    path: ["password_confirmation"],
+    message: "La conferma della password non corrisponde",
+  });
+
 const form = ref<FormData>({
   first_name: "",
   last_name: "",
@@ -38,51 +63,28 @@ const isLoading = ref(false);
 const isUserCreated = ref(false);
 const errors = ref<Errors>({});
 
-const formHasErrors = computed((): boolean => {
-  return Object.keys(errors.value).length > 0;
-});
-
 // HANDLERS
 const submitForm = (): void => {
   errors.value = {};
-  validateForm();
-  if (!formHasErrors.value) {
-    register();
+
+  // Validate form data
+  const result = schema.safeParse(form.value);
+
+  if (!result.success) {
+    const treeErrors = z.treeifyError(result.error);
+
+    if (treeErrors.properties) {
+      errors.value = Object.fromEntries(
+        Object.entries(treeErrors.properties).map(([key, value]) => [
+          key,
+          value.errors[0],
+        ])
+      );
+    }
+    return;
   }
-};
 
-const validateForm = (): void => {
-  // Validates form data
-  const validationErrors: Errors = {};
-  // Validation rules
-  if (!form.value.first_name)
-    validationErrors.first_name = "Il campo nome è obbligatorio";
-  if (!form.value.last_name)
-    validationErrors.last_name = "Il campo cognome è obbligatorio";
-  if (!form.value.email)
-    validationErrors.email = "Il campo email è obbligatorio";
-  else if (
-    !/^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(form.value.email)
-  )
-    validationErrors.email = "Inserisci un'email valida";
-  if (!form.value.phone_number)
-    validationErrors.phone_number =
-      "Il campo numero di telefono è obbligatorio";
-  else if (
-    !/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/.test(
-      form.value.phone_number
-    )
-  )
-    validationErrors.phone_number = "Inserisci un numero di telefono valido";
-  if (!form.value.password)
-    validationErrors.password = "Il campo password è obbligatorio";
-  else if (form.value.password.length < 5)
-    validationErrors.password = "La password deve essere di almeno 5 caratteri";
-  if (form.value.password !== form.value.password_confirmation)
-    validationErrors.password_confirmation =
-      "La conferma della password non corrisponde";
-
-  errors.value = validationErrors; // Set component errors to temporary errors
+  register();
 };
 
 const register = async (): Promise<void> => {
