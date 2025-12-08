@@ -21,6 +21,10 @@ const iconsMap = {
   phone: "phone",
   email: "email",
   location: "location_on",
+  spa: "spa",
+  content_cut: "content_cut",
+  palette: "palette",
+  brush: "brush",
 } as const;
 export type IconName = keyof typeof iconsMap;
 
