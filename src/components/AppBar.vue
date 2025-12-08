@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { PropType, ref } from "vue";
 import UserProfile from "@/components/UserProfile.vue";
 import AppLogo from "@/components/AppLogo.vue";
 import Button from "@/components/Button.vue";
 import MobileMenu from "@/components/MobileMenu.vue";
 import { isLogged } from "@/store/auth";
+import Icon from "@/components/Icon.vue";
+import { Link } from "@/composables/useNavigation";
 
-// STATE
-const mobileMenuVisible = ref(false);
+const props = defineProps({
+  links: {
+    type: Array as PropType<Link[]>,
+    default: () => [],
+  },
+});
 
-// EMITS
 const emit = defineEmits({
   menuToggle: () => true,
 });
+
+// DATA
+const mobileMenuVisible = ref(false);
 
 // HANDLERS
 const handleMenuToggle = (): void => {
@@ -33,33 +41,14 @@ const handleMenuToggle = (): void => {
       <div class="hidden md:flex gap-12">
         <!-- Nav links -->
         <ul class="hidden md:flex items-center gap-8">
-          <li>
+          <li v-for="link in links" :key="link.url">
             <RouterLink
-              to="#"
-              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
-              >Servizi</RouterLink
+              :to="link.url"
+              class="text-primary-600 hover:text-primary-900 transition-colors"
             >
-          </li>
-          <li>
-            <RouterLink
-              to="#"
-              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
-              >Galleria</RouterLink
-            >
-          </li>
-          <li>
-            <RouterLink
-              v-if="isLogged()"
-              to="/appointments"
-              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
-              >Prenota</RouterLink
-            >
-            <RouterLink
-              v-else
-              to="/login"
-              class="text-primary-600 hover:text-primary-900 transition-colors uppercase"
-              >Prenota</RouterLink
-            >
+              <Icon v-if="link.icon" :name="link.icon" />
+              {{ link.label }}
+            </RouterLink>
           </li>
         </ul>
 

@@ -69,7 +69,7 @@ const login = async (): Promise<void> => {
   <PageLayout>
     <div class="flex justify-center items-center flex-1">
       <div class="w-full max-w-md">
-        <Card title="Login">
+        <Card title="Login" class="m-4">
           <form @submit.prevent="" novalidate class="flex flex-col gap-4">
             <div v-if="errors.generic" class="alert alert-danger">
               {{ errors.generic }}

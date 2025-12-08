@@ -7,6 +7,7 @@ import GalleryCarousel from "@/components/GalleryCarousel.vue";
 import Icon, { type IconName } from "@/components/Icon.vue";
 import Jumbotron from "@/components/Jumbotron.vue";
 import PageLayout from "@/components/PageLayout.vue";
+import { useNavigation } from "@/composables/useNavigation";
 
 interface Service {
   id: number;
@@ -16,8 +17,9 @@ interface Service {
   [key: string]: unknown;
 }
 
+// DATA
 const router = useRouter();
-
+const { homeLinks } = useNavigation();
 const services = ref<Service[]>([
   {
     id: 1,
@@ -49,6 +51,7 @@ const services = ref<Service[]>([
   },
 ]);
 
+// HANDLERS
 const goToLogin = (): void => {
   router.push({ name: "login" });
 };
@@ -67,12 +70,12 @@ const goToAppointments = (): void => {
 </script>
 
 <template>
-  <PageLayout>
+  <PageLayout :links="homeLinks">
     <!-- Jumbotron Section -->
     <Jumbotron />
 
     <!-- Gallery Section -->
-    <section class="bg-primary-50 py-16">
+    <section id="gallery" class="bg-primary-50 py-16">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-12">
           <p
@@ -89,7 +92,7 @@ const goToAppointments = (): void => {
     </section>
 
     <!-- Services Section -->
-    <section class="bg-white py-16">
+    <section id="services" class="bg-white py-16">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-12">
           <p
@@ -131,7 +134,7 @@ const goToAppointments = (): void => {
     </section>
 
     <!-- Booking Section -->
-    <section class="bg-primary-50 py-16">
+    <section id="book" class="bg-primary-50 py-16">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center">
           <h2 class="text-4xl md:text-5xl font-bold mb-4 text-primary-500">
