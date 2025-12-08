@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { setUser, User } from "@/store/auth";
 import { useAxios } from "@/composables/useAxios";
@@ -7,6 +7,7 @@ import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
 import { useNavigation } from "@/composables/useNavigation";
+import z from "zod";
 
 interface FormData {
   email: string;
@@ -18,6 +19,12 @@ interface Errors {
   password?: string;
   generic?: string;
 }
+
+// ZOD SCHEMA
+const schema = z.object({
+  email: z.email("Email non valida"),
+  password: z.string("Password non valida"),
+});
 
 // DATA
 const { authLinks } = useNavigation();
@@ -31,27 +38,28 @@ const form = ref<FormData>({
 
 const errors = ref<Errors>({});
 
-const formHasErrors = computed((): boolean => {
-  return Object.keys(errors.value).length > 0;
-});
-
 // HANDLERS
 const submitForm = (): void => {
   errors.value = {};
-  validateForm();
-  if (!formHasErrors.value) {
-    login();
+
+  // Validate form data
+  const result = schema.safeParse(form.value);
+
+  if (!result.success) {
+    const treeErrors = z.treeifyError(result.error);
+
+    if (treeErrors.properties) {
+      errors.value = Object.fromEntries(
+        Object.entries(treeErrors.properties).map(([key, value]) => [
+          key,
+          value.errors[0],
+        ])
+      );
+    }
+    return;
   }
-};
 
-const validateForm = (): void => {
-  const validationErrors: Errors = {};
-  if (!form.value.email)
-    validationErrors.email = "Il campo email è obbligatorio";
-  if (!form.value.password)
-    validationErrors.password = "Il campo password è obbligatorio";
-
-  errors.value = validationErrors;
+  login();
 };
 
 const login = async (): Promise<void> => {
@@ -88,7 +96,7 @@ const login = async (): Promise<void> => {
                 id="email"
                 v-model.trim="form.email"
               />
-              <div v-if="errors.email" class="invalid-feedback">
+              <div v-if="errors.email" class="text-red-600 text-xs mt-1">
                 {{ errors.email }}
               </div>
             </div>
@@ -102,7 +110,7 @@ const login = async (): Promise<void> => {
                 id="password"
                 v-model.trim="form.password"
               />
-              <div v-if="errors.password" class="invalid-feedback">
+              <div v-if="errors.password" class="text-red-600 text-xs mt-1">
                 {{ errors.password }}
               </div>
             </div>
