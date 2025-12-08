@@ -14,7 +14,7 @@ const props = defineProps({
   },
   imageUrl: {
     type: String,
-    default: "https://picsum.photos/seed/jumbotron-hero/1920/1080",
+    default: "/images/hero-01.jpg",
   },
 });
 
