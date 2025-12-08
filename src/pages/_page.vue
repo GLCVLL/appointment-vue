@@ -5,6 +5,7 @@ import { isLogged } from "@/store/auth";
 import Button from "@/components/Button.vue";
 import AppLoader from "@/components/AppLoader.vue";
 import GalleryCarousel from "@/components/GalleryCarousel.vue";
+import Jumbotron from "@/components/Jumbotron.vue";
 import PageLayout from "@/components/PageLayout.vue";
 
 interface Service {
@@ -37,15 +38,8 @@ const goToAppointments = (): void => {
 
 <template>
   <PageLayout>
-    <!-- Hero Section -->
-    <section class="bg-primary-200 text-primary-800 py-16">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center">
-          <h1 class="text-4xl md:text-5xl font-bold mb-4">Benvenuto</h1>
-          <p class="text-xl md:text-2xl">Sistema di gestione appuntamenti</p>
-        </div>
-      </div>
-    </section>
+    <!-- Jumbotron Section -->
+    <Jumbotron />
 
     <!-- Gallery Section -->
     <section class="bg-primary-50 py-16">
