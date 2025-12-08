@@ -2,9 +2,10 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { isLogged } from "@/store/auth";
-import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
 import AppLoader from "@/components/AppLoader.vue";
+import GalleryCarousel from "@/components/GalleryCarousel.vue";
+import PageLayout from "@/components/PageLayout.vue";
 
 interface Service {
   id: number;
@@ -44,6 +45,31 @@ const goToAppointments = (): void => {
           <p class="text-xl md:text-2xl">Sistema di gestione appuntamenti</p>
         </div>
       </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="bg-primary-50 py-16">
+      <div class="max-w-7xl mx-auto px-4">
+        <div
+          class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6"
+        >
+          <div>
+            <p
+              class="text-sm font-semibold text-primary-700 uppercase tracking-wide"
+            >
+              Galleria
+            </p>
+            <h3 class="text-2xl md:text-3xl font-bold text-gray-800">
+              I Miei Lavori
+            </h3>
+            <p class="text-gray-600">
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit.
+            </p>
+          </div>
+          <div class="text-sm text-gray-500">Scorri per vedere di più</div>
+        </div>
+      </div>
+      <GalleryCarousel />
     </section>
 
     <!-- Info Section - Servizi -->
