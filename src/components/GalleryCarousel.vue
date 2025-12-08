@@ -96,3 +96,17 @@ const responsiveOptions = [
     </template>
   </Carousel>
 </template>
+
+<style scoped>
+:deep(.p-carousel-indicator-button) {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  padding: 0;
+  margin: 0 4px;
+}
+
+:deep(.p-carousel-indicator-button.p-highlight) {
+  background-color: var(--p-primary-600);
+}
+</style>
