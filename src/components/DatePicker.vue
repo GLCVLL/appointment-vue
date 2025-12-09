@@ -13,6 +13,10 @@ const props = defineProps({
   max: {
     type: [Date, String] as PropType<Date | string | null>,
   },
+  disabled: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits({
@@ -95,6 +99,7 @@ const handleUpdate = (
     :modelValue="internalValue"
     :minDate="minDate"
     :maxDate="maxDate"
+    :disabled="disabled"
     @update:modelValue="handleUpdate"
     dateFormat="yyyy-mm-dd"
     showIcon
