@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import AppLoader from "@/components/AppLoader.vue";
 import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
 import Card from "@/components/Card.vue";
 import Icon from "@/components/Icon.vue";
-import { useRouter } from "vue-router";
+import DatePicker from "@/components/DatePicker.vue";
 import { useNavigation } from "@/composables/useNavigation";
+import { format, addMonths, endOfMonth } from "date-fns";
 
 interface Service {
   id: number;
@@ -24,11 +25,23 @@ interface MockAppointment {
 }
 
 const axios = useAxios();
-const router = useRouter();
 const { authLinks } = useNavigation();
 
 const services = ref<Service[]>([]);
 const isLoading = ref(false);
+const selectedDate = ref<string | null>(null);
+const selectedServices = ref<number[]>([]);
+
+// Calcola la data minima (oggi) e massima (ultimo giorno del mese successivo)
+const minDate = computed((): string => {
+  return format(new Date(), "yyyy-MM-dd");
+});
+
+const maxDate = computed((): string => {
+  const nextMonth = addMonths(new Date(), 1);
+  const lastDayOfNextMonth = endOfMonth(nextMonth);
+  return format(lastDayOfNextMonth, "yyyy-MM-dd");
+});
 
 // Mock appointments data
 const mockAppointments = ref<MockAppointment[]>([
@@ -79,8 +92,8 @@ const getServices = async (): Promise<void> => {
   }
 };
 
-const goToAppointments = (): void => {
-  router.push({ name: "appointments" });
+const handleBook = (): void => {
+  // Per il momento non fa nulla
 };
 
 const formatDate = (dateString: string): string => {
@@ -146,36 +159,46 @@ onMounted(() => {
         <Card>
           <AppLoader v-if="isLoading" />
 
-          <div v-else>
-            <p v-if="services.length === 0" class="text-gray-500 mb-4">
-              Nessun servizio disponibile al momento.
-            </p>
-
-            <div v-else class="mb-4">
-              <p class="mb-3 text-sm font-medium">Servizi disponibili</p>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label
-                  v-for="service in services"
-                  :key="service.id"
-                  class="flex items-center gap-2 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    :id="`service-${service.id}`"
-                    :value="service.id"
-                    class="w-4 h-4 appearance-none bg-white border-gray-300 border-2 rounded focus:ring-primary-500 focus:ring-2 checked:bg-primary-600 checked:border-primary-600"
-                  />
-                  <span class="text-sm">{{ service.name }}</span>
-                </label>
+          <div v-else class="flex flex-col gap-6">
+            <!-- Parte 1: Servizi -->
+            <div class="flex flex-col">
+              <p v-if="services.length === 0" class="text-pink-500">
+                Nessun servizio disponibile al momento.
+              </p>
+              <div v-else>
+                <p class="mb-3 text-sm font-medium">Servizi disponibili</p>
+                <div class="flex flex-col gap-3">
+                  <label
+                    v-for="service in services"
+                    :key="service.id"
+                    class="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      :id="`service-${service.id}`"
+                      :value="service.id"
+                      v-model="selectedServices"
+                      class="w-4 h-4 appearance-none bg-white border-gray-300 border-2 rounded focus:ring-primary-500 focus:ring-2 checked:bg-primary-600 checked:border-primary-600"
+                    />
+                    <span class="text-sm">{{ service.name }}</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <div class="mt-4">
-              <Button
-                label="Prenota un appuntamento"
-                theme="primary"
-                @click="goToAppointments"
+            <!-- Parte 2: Data -->
+            <div class="flex flex-col">
+              <p class="mb-3 text-sm font-medium">Seleziona data</p>
+              <DatePicker
+                v-model="selectedDate"
+                :min="minDate"
+                :max="maxDate"
               />
+            </div>
+
+            <!-- Parte 3: Bottone Prenota -->
+            <div class="flex flex-col">
+              <Button label="Prenota" theme="primary" @click="handleBook" />
             </div>
           </div>
         </Card>
