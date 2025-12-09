@@ -5,6 +5,7 @@ import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
 import { useRouter } from "vue-router";
+import { useNavigation } from "@/composables/useNavigation";
 
 interface Service {
   id: number;
@@ -14,6 +15,7 @@ interface Service {
 
 const axios = useAxios();
 const router = useRouter();
+const { authLinks } = useNavigation();
 
 const services = ref<Service[]>([]);
 const isLoading = ref(false);
@@ -43,7 +45,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <PageLayout>
+  <PageLayout :links="authLinks">
     <div class="max-w-7xl mx-auto px-4 mt-4">
       <h1 class="mb-4 text-2xl font-bold">Dashboard</h1>
 
