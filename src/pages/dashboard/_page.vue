@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import AppLoader from "@/components/AppLoader.vue";
 import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
@@ -41,6 +41,18 @@ const maxDate = computed((): string => {
   const nextMonth = addMonths(new Date(), 1);
   const lastDayOfNextMonth = endOfMonth(nextMonth);
   return format(lastDayOfNextMonth, "yyyy-MM-dd");
+});
+
+// Computed per verificare se ci sono servizi selezionati
+const hasSelectedServices = computed((): boolean => {
+  return selectedServices.value.length > 0;
+});
+
+// Watcher per resettare la data quando non ci sono servizi selezionati
+watch(selectedServices, (newValue) => {
+  if (newValue.length === 0) {
+    selectedDate.value = null;
+  }
 });
 
 // Mock appointments data
@@ -193,6 +205,7 @@ onMounted(() => {
                 v-model="selectedDate"
                 :min="minDate"
                 :max="maxDate"
+                :disabled="!hasSelectedServices"
               />
             </div>
 
