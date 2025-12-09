@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "tailwindcss-primeui";
 
+/* Forza il tema light su tutta l'applicazione */
+html,
+body {
+  color-scheme: light !important;
+}
+
 :root {
   --p-primary-50: #faf7f8;
   --p-primary-100: #f5eef0;
@@ -13,4 +19,11 @@
   --p-primary-800: #6d474b;
   --p-primary-900: #4a3032;
   --p-primary-950: #500724;
+}
+
+/* Disabilita il dark mode per PrimeVue */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light !important;
+  }
 }

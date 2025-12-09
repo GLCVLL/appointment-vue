@@ -68,6 +68,7 @@ app.use(PrimeVue, {
   theme: {
     preset: PinkPreset,
     options: {
+      darkModeSelector: 'none', // Disabilita il dark mode automatico
       cssLayer: {
         name: "primevue",
         order: "theme, base, primevue",
