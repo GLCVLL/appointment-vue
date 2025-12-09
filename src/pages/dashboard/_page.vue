@@ -4,13 +4,22 @@ import AppLoader from "@/components/AppLoader.vue";
 import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
+import Card from "@/components/Card.vue";
 import { useRouter } from "vue-router";
 import { useNavigation } from "@/composables/useNavigation";
 
 interface Service {
   id: number;
   name: string;
+  duration: string;
   [key: string]: unknown;
+}
+
+interface MockAppointment {
+  id: number;
+  date: string;
+  startTime: string;
+  services: string[];
 }
 
 const axios = useAxios();
@@ -19,6 +28,40 @@ const { authLinks } = useNavigation();
 
 const services = ref<Service[]>([]);
 const isLoading = ref(false);
+
+// Mock appointments data
+const mockAppointments = ref<MockAppointment[]>([
+  {
+    id: 1,
+    date: "2024-01-15",
+    startTime: "10:00",
+    services: ["Taglio di capelli"],
+  },
+  {
+    id: 2,
+    date: "2024-01-20",
+    startTime: "14:30",
+    services: ["Barba"],
+  },
+  {
+    id: 3,
+    date: "2024-01-25",
+    startTime: "11:00",
+    services: ["Taglio di capelli", "Barba"],
+  },
+  {
+    id: 4,
+    date: "2024-02-01",
+    startTime: "15:00",
+    services: ["Taglio di capelli"],
+  },
+  {
+    id: 5,
+    date: "2024-02-05",
+    startTime: "09:30",
+    services: ["Barba", "Trattamento viso"],
+  },
+]);
 
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
@@ -39,6 +82,15 @@ const goToAppointments = (): void => {
   router.push({ name: "appointments" });
 };
 
+const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("it-IT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 onMounted(() => {
   getServices();
 });
@@ -47,28 +99,68 @@ onMounted(() => {
 <template>
   <PageLayout :links="authLinks">
     <div class="max-w-7xl mx-auto px-4 mt-4">
-      <h1 class="mb-4 text-2xl font-bold">Dashboard</h1>
+      <h1 class="mb-6 text-2xl font-bold">Dashboard</h1>
 
-      <div class="w-full md:w-2/3 lg:w-1/2">
-        <div class="bg-white rounded-lg shadow-md p-4">
-          <h2 class="mb-3 text-xl font-semibold">Servizi disponibili</h2>
+      <!-- Sezione alta: Card appuntamenti -->
+      <section class="mb-8">
+        <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <Card
+            v-for="appointment in mockAppointments"
+            :key="appointment.id"
+            class="aspect-square max-w-[200px]"
+          >
+            <div class="flex flex-col h-full justify-between">
+              <div>
+                <div class="text-sm text-gray-600 mb-2">
+                  {{ formatDate(appointment.date) }}
+                </div>
+                <div class="text-lg font-semibold mb-2">
+                  {{ appointment.startTime }}
+                </div>
+                <div class="text-sm mb-3">
+                  <div
+                    v-for="(service, index) in appointment.services"
+                    :key="index"
+                  >
+                    {{ service }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
 
+      <!-- Sezione bassa: Servizi per prenotazione -->
+      <section>
+        <h2 class="mb-4 text-xl font-semibold">Prenota un appuntamento</h2>
+        <Card>
           <AppLoader v-if="isLoading" />
 
           <div v-else>
-            <p v-if="services.length === 0" class="text-gray-500">
+            <p v-if="services.length === 0" class="text-gray-500 mb-4">
               Nessun servizio disponibile al momento.
             </p>
 
-            <ul v-else class="list-none mb-4">
-              <li
-                v-for="service in services"
-                :key="service.id"
-                class="mb-3 pb-3 border-b border-gray-200 last:border-b-0"
-              >
-                <h5 class="mb-1 text-lg font-medium">{{ service.name }}</h5>
-              </li>
-            </ul>
+            <div v-else class="mb-4">
+              <p class="mb-3 text-sm font-medium">Servizi disponibili</p>
+              <div class="flex flex-col gap-3">
+                <label
+                  v-for="service in services"
+                  :key="service.id"
+                  class="flex items-center gap-2 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    :id="`service-${service.id}`"
+                    :value="service.id"
+                    class="w-4 h-4 bg-white border-gray-300 rounded focus:ring-primary-500 text-primary-600 checked:bg-primary-600 checked:border-primary-600"
+                  />
+                  <span class="text-sm">{{ service.name }}</span>
+                </label>
+              </div>
+            </div>
 
             <div class="mt-4">
               <Button
@@ -78,8 +170,8 @@ onMounted(() => {
               />
             </div>
           </div>
-        </div>
-      </div>
+        </Card>
+      </section>
     </div>
   </PageLayout>
 </template>
