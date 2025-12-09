@@ -64,9 +64,6 @@ const goToDashboard = (): void => {
   router.push({ name: "dashboard" });
 };
 
-const goToAppointments = (): void => {
-  router.push({ name: "appointments" });
-};
 </script>
 
 <template>
@@ -153,11 +150,6 @@ const goToAppointments = (): void => {
               label="Vai alla Dashboard"
               theme="primary"
               @click="goToDashboard"
-            />
-            <Button
-              label="Prenota un appuntamento"
-              theme="secondary"
-              @click="goToAppointments"
             />
           </div>
           <div v-else class="flex gap-4 justify-center">

@@ -20,7 +20,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits({
-  "update:modelValue": (value: string | null) => true,
+  "update:modelValue": (_value: string | null) => true,
 });
 
 const internalValue = computed((): Date | undefined => {
