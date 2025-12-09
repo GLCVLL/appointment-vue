@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { isLogged, removeUser } from '@/store/auth';
 import { useRouter } from 'vue-router';
-import { useAxios } from '@/composables/useAxios';
+import { useApi } from '@/composables/useApi';
 
 const router = useRouter();
-const axios = useAxios();
+const axios = useApi();
 
 const logout = async (): Promise<void> => {
     const apiUrl = import.meta.env.VITE_BASEURI as string;

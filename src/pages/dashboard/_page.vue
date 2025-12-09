@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from "vue";
 import AppLoader from "@/components/AppLoader.vue";
-import { useAxios } from "@/composables/useAxios";
+import { useApi } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
 import Card from "@/components/Card.vue";
@@ -25,7 +25,7 @@ interface MockAppointment {
   services: string[];
 }
 
-const axios = useAxios();
+const axios = useApi();
 const { authLinks } = useNavigation();
 
 const services = ref<Service[]>([]);
@@ -114,6 +114,61 @@ const getServices = async (): Promise<void> => {
   }
 };
 
+// Updates available booking hours based on selected services and date
+// const updateBookingHours = (): void => {
+//   const slotDuration = 30; // Duration of each time slot in minutes
+//   const selectedDate = appointmentForm.value.date;
+
+//   timeArray.value = []; // Reset available time slots
+
+//   // Skip if the selected date is a closed day
+//   if (closedDays.value.includes(selectedDate)) return;
+
+//   // Calculate available time slots based on service duration
+//   const selectedSlotsNumber = selectedDuration.value / slotDuration;
+//   slotDays.value.forEach((slotDay) => {
+//     if (slotDay.date === selectedDate) {
+//       slotDay.slots.forEach((slot, idx) => {
+//         if (slot.status === "") {
+//           let isAvailable = true;
+//           for (let i = 1; i < selectedSlotsNumber; i++) {
+//             if (
+//               idx + i >= slotDay.slots.length ||
+//               slotDay.slots[idx + i].status === "booked"
+//             ) {
+//               isAvailable = false;
+//             }
+//           }
+//           if (isAvailable) {
+//             timeArray.value.push(slot.hour);
+//           }
+//         }
+//       });
+//     }
+//   });
+
+//   // Reset start time if it's no longer available
+//   if (!timeArray.value.includes(appointmentForm.value.start_time)) {
+//     appointmentForm.value.start_time = "";
+//   }
+// };
+
+// Fetches slot days data from the server
+// const fetchSlotDays = async (): Promise<void> => {
+//   try {
+//     const apiUrl = import.meta.env.VITE_BASEURI as string;
+//     const { data } = await axios.get<{
+//       slotDays: SlotDay[];
+//       closedDays: string[];
+//     }>(`${apiUrl}/api/booking-hours`);
+//     console.log(data);
+//     // slotDays.value = data.slotDays;
+//     // closedDays.value = data.closedDays;
+//   } catch (error) {
+//     console.error("Error loading data:", error);
+//   }
+// };
+
 const handleBook = (): void => {
   // Per il momento non fa nulla
 };
@@ -129,6 +184,7 @@ const formatDate = (dateString: string): string => {
 
 onMounted(() => {
   getServices();
+  // fetchSlotDays();
 });
 </script>
 

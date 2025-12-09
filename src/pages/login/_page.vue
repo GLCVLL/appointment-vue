@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { setUser, User } from "@/store/auth";
-import { useAxios } from "@/composables/useAxios";
+import { useApi } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
@@ -29,7 +29,7 @@ const schema = z.object({
 // DATA
 const { authLinks } = useNavigation();
 const router = useRouter();
-const axios = useAxios();
+const axios = useApi();
 
 const form = ref<FormData>({
   email: "",

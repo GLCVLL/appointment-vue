@@ -3,7 +3,7 @@ import Avatar from "primevue/avatar";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import { getUser, removeUser } from "@/store/auth";
-import { useAxios } from "@/composables/useAxios";
+import { useApi } from "@/composables/useApi";
 import Dropdown, { type MenuItem } from "@/components/Dropdown.vue";
 
 const props = defineProps({
@@ -15,7 +15,7 @@ const props = defineProps({
 
 // DATA
 const router = useRouter();
-const axios = useAxios();
+const axios = useApi();
 
 const user = computed(() => getUser());
 const userInitials = computed(() => {

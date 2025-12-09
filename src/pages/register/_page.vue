@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { useAxios } from "@/composables/useAxios";
+import { useApi } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
@@ -24,7 +24,7 @@ interface Errors {
 // DATA
 const { authLinks } = useNavigation();
 const router = useRouter();
-const axios = useAxios();
+const axios = useApi();
 
 const schema = z
   .object({

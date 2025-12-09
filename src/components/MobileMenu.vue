@@ -6,7 +6,7 @@ import AppLogo from "@/components/AppLogo.vue";
 import { isLogged, removeUser } from "@/store/auth";
 import UserProfile from "@/components/UserProfile.vue";
 import { useRouter } from "vue-router";
-import { useAxios } from "@/composables/useAxios";
+import { useApi } from "@/composables/useApi";
 import { Link } from "@/composables/useNavigation";
 
 const props = defineProps({
@@ -27,7 +27,7 @@ const emits = defineEmits({
 
 // DATA
 const router = useRouter();
-const axios = useAxios();
+const axios = useApi();
 const isDesktop = useMediaQuery("(min-width: 768px)");
 
 // HANDLERS
