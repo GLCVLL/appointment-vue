@@ -25,6 +25,7 @@ const iconsMap = {
   content_cut: "content_cut",
   palette: "palette",
   brush: "brush",
+  calendar: "event",
 } as const;
 export type IconName = keyof typeof iconsMap;
 

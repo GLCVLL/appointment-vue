@@ -5,6 +5,7 @@ import { useAxios } from "@/composables/useAxios";
 import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
 import Card from "@/components/Card.vue";
+import Icon from "@/components/Icon.vue";
 import { useRouter } from "vue-router";
 import { useNavigation } from "@/composables/useNavigation";
 
@@ -99,12 +100,19 @@ onMounted(() => {
 <template>
   <PageLayout :links="authLinks">
     <div class="max-w-7xl mx-auto px-4 mt-4">
-      <h1 class="mb-6 text-2xl font-bold">Dashboard</h1>
-
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div v-if="mockAppointments.length === 0" class="text-center py-8">
+          <div class="text-primary-400 mb-4 flex justify-center">
+            <Icon name="calendar" size="64px" />
+          </div>
+          <p class="text-primary-500 mb-4">Nessun appuntamento prenotato</p>
+        </div>
+        <div
+          v-else
+          class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
+        >
           <Card
             v-for="appointment in mockAppointments"
             :key="appointment.id"
@@ -145,7 +153,7 @@ onMounted(() => {
 
             <div v-else class="mb-4">
               <p class="mb-3 text-sm font-medium">Servizi disponibili</p>
-              <div class="flex flex-col gap-3">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <label
                   v-for="service in services"
                   :key="service.id"
