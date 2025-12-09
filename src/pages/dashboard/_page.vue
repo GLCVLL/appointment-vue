@@ -163,7 +163,7 @@ onMounted(() => {
                     type="checkbox"
                     :id="`service-${service.id}`"
                     :value="service.id"
-                    class="w-4 h-4 bg-white border-gray-300 rounded focus:ring-primary-500 text-primary-600 checked:bg-primary-600 checked:border-primary-600"
+                    class="w-4 h-4 appearance-none bg-white border-gray-300 border-2 rounded focus:ring-primary-500 focus:ring-2 checked:bg-primary-600 checked:border-primary-600"
                   />
                   <span class="text-sm">{{ service.name }}</span>
                 </label>
@@ -184,4 +184,11 @@ onMounted(() => {
   </PageLayout>
 </template>
 
-<style></style>
+<style scoped>
+input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-3.5-3.5a1 1 0 011.414-1.414L2.586 10l6.293-6.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+</style>
