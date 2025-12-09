@@ -101,7 +101,6 @@ const handleUpdate = (
     :maxDate="maxDate"
     :disabled="disabled"
     @update:modelValue="handleUpdate"
-    dateFormat="yyyy-mm-dd"
     showIcon
   />
 </template>
