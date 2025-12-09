@@ -117,7 +117,7 @@ const login = async (): Promise<void> => {
 
             <Button
               label="Login"
-              theme="contrast"
+              theme="primary"
               icon="login"
               @click="submitForm"
             />

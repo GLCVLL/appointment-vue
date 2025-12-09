@@ -247,7 +247,7 @@ const register = async (): Promise<void> => {
 
             <Button
               label="Registrati"
-              theme="contrast"
+              theme="primary"
               icon="user"
               @click="submitForm"
             />
@@ -272,7 +272,7 @@ const register = async (): Promise<void> => {
             </div>
             <Button
               label="Vai al Login"
-              theme="contrast"
+              theme="primary"
               icon="login"
               @click="router.push('/login')"
             />
