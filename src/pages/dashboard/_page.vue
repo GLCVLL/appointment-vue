@@ -7,6 +7,7 @@ import Button from "@/components/Button.vue";
 import Card from "@/components/Card.vue";
 import Icon from "@/components/Icon.vue";
 import DatePicker from "@/components/DatePicker.vue";
+import TimeSlotPicker from "@/components/TimeSlotPicker.vue";
 import { useNavigation } from "@/composables/useNavigation";
 import { format, addMonths, endOfMonth } from "date-fns";
 
@@ -30,6 +31,7 @@ const { authLinks } = useNavigation();
 const services = ref<Service[]>([]);
 const isLoading = ref(false);
 const selectedDate = ref<string | null>(null);
+const selectedTime = ref<string | null>(null);
 const selectedServices = ref<number[]>([]);
 
 // Calcola la data minima (oggi) e massima (ultimo giorno del mese successivo)
@@ -52,6 +54,14 @@ const hasSelectedServices = computed((): boolean => {
 watch(selectedServices, (newValue) => {
   if (newValue.length === 0) {
     selectedDate.value = null;
+    selectedTime.value = null;
+  }
+});
+
+// Watcher per resettare l'orario quando la data cambia
+watch(selectedDate, (newValue) => {
+  if (!newValue) {
+    selectedTime.value = null;
   }
 });
 
@@ -209,9 +219,24 @@ onMounted(() => {
               />
             </div>
 
-            <!-- Parte 3: Bottone Prenota -->
+            <!-- Parte 3: Orario -->
             <div class="flex flex-col">
-              <Button label="Prenota" theme="primary" @click="handleBook" />
+              <p class="mb-3 text-sm font-medium">Seleziona orario</p>
+              <TimeSlotPicker
+                v-model="selectedTime"
+                :disabled="!selectedDate || !hasSelectedServices"
+              />
+            </div>
+
+            <!-- Parte 4: Bottone Prenota -->
+            <div>
+              <Button
+                label="Prenota"
+                theme="primary"
+                icon="calendar"
+                @click="handleBook"
+                class="w-full md:w-auto"
+              />
             </div>
           </div>
         </Card>
