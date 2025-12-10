@@ -20,7 +20,7 @@ interface Service {
   [key: string]: unknown;
 }
 
-interface MockAppointment {
+interface Appointment {
   id: number;
   date: string;
   startTime: string;
@@ -68,39 +68,7 @@ watch(selectedDate, (newValue) => {
   }
 });
 
-// Mock appointments data
-const mockAppointments = ref<MockAppointment[]>([
-  {
-    id: 1,
-    date: "2024-01-15",
-    startTime: "10:00",
-    services: ["Taglio di capelli"],
-  },
-  {
-    id: 2,
-    date: "2024-01-20",
-    startTime: "14:30",
-    services: ["Barba"],
-  },
-  {
-    id: 3,
-    date: "2024-01-25",
-    startTime: "11:00",
-    services: ["Taglio di capelli", "Barba"],
-  },
-  {
-    id: 4,
-    date: "2024-02-01",
-    startTime: "15:00",
-    services: ["Taglio di capelli"],
-  },
-  {
-    id: 5,
-    date: "2024-02-05",
-    startTime: "09:30",
-    services: ["Barba", "Trattamento viso"],
-  },
-]);
+const appointments = ref<Appointment[]>([]);
 
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
@@ -114,6 +82,19 @@ const getServices = async (): Promise<void> => {
     console.error(e);
   } finally {
     isLoading.value = false;
+  }
+};
+
+const getAppointments = async (): Promise<void> => {
+  const apiUrl = import.meta.env.VITE_BASEURI as string;
+  try {
+    const { data } = await axios.get<Appointment[]>(
+      `${apiUrl}/api/appointments`
+    );
+
+    appointments.value = data;
+  } catch (error) {
+    console.error("Error loading appointments:", error);
   }
 };
 
@@ -205,6 +186,9 @@ const handleBook = async (): Promise<void> => {
     selectedTime.value = null;
     selectedServices.value = [];
 
+    // Ricarica gli appuntamenti
+    await getAppointments();
+
     // Mostra toast di successo
     toast.add({
       severity: "success",
@@ -268,6 +252,7 @@ const formatDate = (dateString: string): string => {
 onMounted(() => {
   getServices();
   getBookingHours();
+  getAppointments();
 });
 </script>
 
@@ -277,7 +262,7 @@ onMounted(() => {
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
-        <div v-if="mockAppointments.length === 0" class="text-center py-8">
+        <div v-if="appointments.length === 0" class="text-center py-8">
           <div class="text-primary-400 mb-4 flex justify-center">
             <Icon name="calendar" size="64px" />
           </div>
@@ -288,7 +273,7 @@ onMounted(() => {
           class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
         >
           <Card
-            v-for="appointment in mockAppointments"
+            v-for="appointment in appointments"
             :key="appointment.id"
             class="aspect-square max-w-[200px]"
           >
