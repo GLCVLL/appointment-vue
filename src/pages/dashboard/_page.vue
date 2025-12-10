@@ -217,7 +217,11 @@ const handleBook = async (): Promise<void> => {
     const axiosError = err as {
       response?: {
         status?: number;
-        data?: { errors?: Record<string, string[]>; message?: string };
+        data?: {
+          errors?: Record<string, string[]>;
+          message?: string;
+          appErrors?: string;
+        };
       };
     };
 
@@ -226,7 +230,11 @@ const handleBook = async (): Promise<void> => {
 
     if (axiosError.response?.data) {
       const responseData = axiosError.response.data;
-      if (responseData.message) {
+
+      // Priorità: appErrors > message > errors
+      if (responseData.appErrors) {
+        errorMessage = responseData.appErrors;
+      } else if (responseData.message) {
         errorMessage = responseData.message;
       } else if (responseData.errors) {
         // Se ci sono errori di validazione, prendi il primo
