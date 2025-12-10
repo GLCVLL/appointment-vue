@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { createApp } from "vue";
 import PrimeVue from "primevue/config";
+import ToastService from "primevue/toastservice";
 import Aura from "@primeuix/themes/aura";
 import { definePreset } from "@primeuix/themes";
 import App from "@/App.vue";
@@ -44,6 +45,7 @@ const app = createApp(App);
 app.config.globalProperties.$axios = axiosInstance;
 
 app.use(router);
+app.use(ToastService);
 
 // Custom preset with pink primary color
 const PinkPreset = definePreset(Aura, {
@@ -68,7 +70,7 @@ app.use(PrimeVue, {
   theme: {
     preset: PinkPreset,
     options: {
-      darkModeSelector: 'none', // Disabilita il dark mode automatico
+      darkModeSelector: "none", // Disabilita il dark mode automatico
       cssLayer: {
         name: "primevue",
         order: "theme, base, primevue",
