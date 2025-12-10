@@ -102,5 +102,6 @@ const handleUpdate = (
     :disabled="disabled"
     @update:modelValue="handleUpdate"
     showIcon
+    dateFormat="dd/mm/yy"
   />
 </template>
