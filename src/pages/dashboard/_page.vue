@@ -156,21 +156,20 @@ const getServices = async (): Promise<void> => {
 //   }
 // };
 
-// Fetches slot days data from the server
-// const fetchSlotDays = async (): Promise<void> => {
-//   try {
-//     const apiUrl = import.meta.env.VITE_BASEURI as string;
-//     const { data } = await axios.get<{
-//       slotDays: SlotDay[];
-//       closedDays: string[];
-//     }>(`${apiUrl}/api/booking-hours`);
-//     console.log(data);
-//     // slotDays.value = data.slotDays;
-//     // closedDays.value = data.closedDays;
-//   } catch (error) {
-//     console.error("Error loading data:", error);
-//   }
-// };
+// Fetches booking hours data from the server
+const getBookingHours = async (): Promise<void> => {
+  const apiUrl = import.meta.env.VITE_BASEURI as string;
+  try {
+    const { data } = await axios.get<{
+      slotDays: unknown[];
+      closedDays: string[];
+    }>(`${apiUrl}/api/booking-hours`);
+    console.log(data);
+    // TODO: Gestire i dati ricevuti (slotDays e closedDays)
+  } catch (error) {
+    console.error("Error loading booking hours:", error);
+  }
+};
 
 const handleBook = async (): Promise<void> => {
   // Validazione: verifica che tutti i campi siano selezionati
@@ -268,7 +267,7 @@ const formatDate = (dateString: string): string => {
 
 onMounted(() => {
   getServices();
-  // fetchSlotDays();
+  getBookingHours();
 });
 </script>
 
