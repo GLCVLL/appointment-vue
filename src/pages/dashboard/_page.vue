@@ -10,6 +10,8 @@ import DatePicker from "@/components/DatePicker.vue";
 import TimeSlotPicker from "@/components/TimeSlotPicker.vue";
 import { useNavigation } from "@/composables/useNavigation";
 import { format, addMonths, endOfMonth } from "date-fns";
+import { getUser } from "@/store/auth";
+import { useToast } from "primevue/usetoast";
 
 interface Service {
   id: number;
@@ -27,6 +29,7 @@ interface MockAppointment {
 
 const axios = useApi();
 const { authLinks } = useNavigation();
+const toast = useToast();
 
 const services = ref<Service[]>([]);
 const isLoading = ref(false);
@@ -169,8 +172,81 @@ const getServices = async (): Promise<void> => {
 //   }
 // };
 
-const handleBook = (): void => {
-  // Per il momento non fa nulla
+const handleBook = async (): Promise<void> => {
+  // Validazione: verifica che tutti i campi siano selezionati
+  if (
+    !selectedDate.value ||
+    !selectedTime.value ||
+    selectedServices.value.length === 0
+  ) {
+    return;
+  }
+
+  const apiUrl = import.meta.env.VITE_BASEURI as string;
+  isLoading.value = true;
+
+  try {
+    const user = getUser();
+    if (!user) {
+      console.error("Utente non autenticato");
+      return;
+    }
+
+    const payload = {
+      user_id: user.id,
+      date: selectedDate.value,
+      start_time: selectedTime.value,
+      services: selectedServices.value,
+    };
+
+    await axios.post(`${apiUrl}/api/appointments`, payload);
+
+    // Reset form dopo il successo
+    selectedDate.value = null;
+    selectedTime.value = null;
+    selectedServices.value = [];
+
+    // Mostra toast di successo
+    toast.add({
+      severity: "success",
+      summary: "Successo",
+      detail: "Appuntamento prenotato con successo",
+      life: 3000,
+    });
+  } catch (err: unknown) {
+    const axiosError = err as {
+      response?: {
+        status?: number;
+        data?: { errors?: Record<string, string[]>; message?: string };
+      };
+    };
+
+    // Estrai il messaggio di errore dal backend
+    let errorMessage = "Si è verificato un errore durante la prenotazione";
+
+    if (axiosError.response?.data) {
+      const responseData = axiosError.response.data;
+      if (responseData.message) {
+        errorMessage = responseData.message;
+      } else if (responseData.errors) {
+        // Se ci sono errori di validazione, prendi il primo
+        const firstError = Object.values(responseData.errors)[0];
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          errorMessage = firstError[0];
+        }
+      }
+    }
+
+    // Mostra toast di errore
+    toast.add({
+      severity: "error",
+      summary: "Errore",
+      detail: errorMessage,
+      life: 5000,
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const formatDate = (dateString: string): string => {
@@ -190,7 +266,7 @@ onMounted(() => {
 
 <template>
   <PageLayout :links="authLinks">
-    <div class="max-w-7xl mx-auto px-4 mt-4">
+    <div class="max-w-7xl mx-auto px-4 my-4">
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
