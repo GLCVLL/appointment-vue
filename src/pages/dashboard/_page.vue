@@ -258,7 +258,7 @@ onMounted(() => {
 
 <template>
   <PageLayout :links="authLinks">
-    <div class="max-w-7xl mx-auto px-4 my-4">
+    <div class="sm:max-w-xl md:max-w-2xl lg:max-w-4xl w-full mx-auto p-8">
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
