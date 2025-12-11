@@ -19,6 +19,8 @@ import type {
   AppointmentListItem,
   BookingHoursResponse,
   CreateAppointmentSuccessResponse,
+  SlotDay,
+  TimeSlot,
 } from "@/types/api";
 
 const axios = useApi();
@@ -59,10 +61,14 @@ watch(selectedServices, (newValue) => {
 watch(selectedDate, (newValue) => {
   if (!newValue) {
     selectedTime.value = null;
+  } else {
+    // Ricarica i booking hours quando cambia la data per avere dati aggiornati
+    getBookingHours();
   }
 });
 
 const appointments = ref<AppointmentListItem[]>([]);
+const bookingHours = ref<BookingHoursResponse | null>(null);
 
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
@@ -92,45 +98,6 @@ const getAppointments = async (): Promise<void> => {
   }
 };
 
-// Updates available booking hours based on selected services and date
-// const updateBookingHours = (): void => {
-//   const slotDuration = 30; // Duration of each time slot in minutes
-//   const selectedDate = appointmentForm.value.date;
-
-//   timeArray.value = []; // Reset available time slots
-
-//   // Skip if the selected date is a closed day
-//   if (closedDays.value.includes(selectedDate)) return;
-
-//   // Calculate available time slots based on service duration
-//   const selectedSlotsNumber = selectedDuration.value / slotDuration;
-//   slotDays.value.forEach((slotDay) => {
-//     if (slotDay.date === selectedDate) {
-//       slotDay.slots.forEach((slot, idx) => {
-//         if (slot.status === "") {
-//           let isAvailable = true;
-//           for (let i = 1; i < selectedSlotsNumber; i++) {
-//             if (
-//               idx + i >= slotDay.slots.length ||
-//               slotDay.slots[idx + i].status === "booked"
-//             ) {
-//               isAvailable = false;
-//             }
-//           }
-//           if (isAvailable) {
-//             timeArray.value.push(slot.hour);
-//           }
-//         }
-//       });
-//     }
-//   });
-
-//   // Reset start time if it's no longer available
-//   if (!timeArray.value.includes(appointmentForm.value.start_time)) {
-//     appointmentForm.value.start_time = "";
-//   }
-// };
-
 // Fetches booking hours data from the server
 const getBookingHours = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
@@ -138,12 +105,48 @@ const getBookingHours = async (): Promise<void> => {
     const { data } = await axios.get<BookingHoursResponse>(
       `${apiUrl}/api/booking-hours`
     );
-    console.log(data);
-    // TODO: Gestire i dati ricevuti (slotDays e closedDays)
+    bookingHours.value = data;
   } catch (error) {
     console.error("Error loading booking hours:", error);
   }
 };
+
+// Computed per ottenere gli slot per la data selezionata
+const availableTimeSlots = computed((): TimeSlot[] => {
+  if (!selectedDate.value || !bookingHours.value) {
+    return [];
+  }
+
+  // Se la data è un giorno chiuso, non ci sono slot disponibili
+  if (bookingHours.value.closedDays.includes(selectedDate.value)) {
+    return [];
+  }
+
+  // Trova il SlotDay corrispondente alla data selezionata
+  const slotDay = bookingHours.value.slotDays.find(
+    (day: SlotDay) => day.date === selectedDate.value
+  );
+
+  // Se non esiste un SlotDay per questa data, non ci sono slot disponibili
+  if (!slotDay) {
+    return [];
+  }
+
+  // Restituisce tutti gli slot per questa data (sia disponibili che prenotati)
+  return slotDay.slots;
+});
+
+// Watcher per resettare lo slot selezionato se non è più disponibile
+watch(availableTimeSlots, (newSlots) => {
+  if (selectedTime.value) {
+    const slotExists = newSlots.some(
+      (slot) => slot.hour === selectedTime.value
+    );
+    if (!slotExists) {
+      selectedTime.value = null;
+    }
+  }
+});
 
 const handleBook = async (): Promise<void> => {
   // Validazione: verifica che tutti i campi siano selezionati
@@ -182,8 +185,8 @@ const handleBook = async (): Promise<void> => {
     selectedTime.value = null;
     selectedServices.value = [];
 
-    // Ricarica gli appuntamenti
-    await getAppointments();
+    // Ricarica gli appuntamenti e i booking hours
+    await Promise.all([getAppointments(), getBookingHours()]);
 
     // Mostra toast di successo
     toast.add({
@@ -345,6 +348,7 @@ onMounted(() => {
               <TimeSlotPicker
                 v-model="selectedTime"
                 :disabled="!selectedDate || !hasSelectedServices"
+                :slots="availableTimeSlots"
               />
             </div>
 

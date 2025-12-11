@@ -19,7 +19,6 @@ export type CreateAppointmentSuccessResponse = number;
 // ============================================
 export interface TimeSlot {
   hour: string; // Format: HH:mm
-  status: "booked" | ""; // Empty string means available
 }
 
 export interface SlotDay {
