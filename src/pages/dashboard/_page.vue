@@ -12,20 +12,14 @@ import { useNavigation } from "@/composables/useNavigation";
 import { format, addMonths, endOfMonth } from "date-fns";
 import { getUser } from "@/store/auth";
 import { useToast } from "primevue/usetoast";
-
-interface Service {
-  id: number;
-  name: string;
-  duration: string;
-  [key: string]: unknown;
-}
-
-interface Appointment {
-  id: number;
-  date: string;
-  startTime: string;
-  services: string[];
-}
+import type {
+  Service,
+  BookingServicesResponse,
+  GetAppointmentsResponse,
+  AppointmentListItem,
+  BookingHoursResponse,
+  CreateAppointmentSuccessResponse,
+} from "@/types/api";
 
 const axios = useApi();
 const { authLinks } = useNavigation();
@@ -68,13 +62,13 @@ watch(selectedDate, (newValue) => {
   }
 });
 
-const appointments = ref<Appointment[]>([]);
+const appointments = ref<AppointmentListItem[]>([]);
 
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
     isLoading.value = true;
-    const { data } = await axios.get<{ services: Service[] }>(
+    const { data } = await axios.get<BookingServicesResponse>(
       apiUrl + "/api/services"
     );
     services.value = data.services;
@@ -88,7 +82,7 @@ const getServices = async (): Promise<void> => {
 const getAppointments = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
-    const { data } = await axios.get<Appointment[]>(
+    const { data } = await axios.get<GetAppointmentsResponse>(
       `${apiUrl}/api/appointments`
     );
 
@@ -141,10 +135,9 @@ const getAppointments = async (): Promise<void> => {
 const getBookingHours = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
-    const { data } = await axios.get<{
-      slotDays: unknown[];
-      closedDays: string[];
-    }>(`${apiUrl}/api/booking-hours`);
+    const { data } = await axios.get<BookingHoursResponse>(
+      `${apiUrl}/api/booking-hours`
+    );
     console.log(data);
     // TODO: Gestire i dati ricevuti (slotDays e closedDays)
   } catch (error) {
@@ -179,7 +172,10 @@ const handleBook = async (): Promise<void> => {
       services: selectedServices.value,
     };
 
-    await axios.post(`${apiUrl}/api/appointments`, payload);
+    await axios.post<CreateAppointmentSuccessResponse>(
+      `${apiUrl}/api/appointments`,
+      payload
+    );
 
     // Reset form dopo il successo
     selectedDate.value = null;
