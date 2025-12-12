@@ -31,10 +31,25 @@ const toast = useToast();
 const confirm = useConfirm();
 
 const services = ref<Service[]>([]);
-const isLoading = ref(false);
+const isLoadingServices = ref(false);
+const isLoadingAppointments = ref(false);
+const isLoadingBookingHours = ref(false);
+const isLoadingBook = ref(false);
+const isLoadingDelete = ref(false);
 const selectedDate = ref<string | null>(null);
 const selectedTime = ref<string | null>(null);
 const selectedServices = ref<number[]>([]);
+
+// Computed per gestire il loader di tutta la pagina
+const isPageLoading = computed((): boolean => {
+  return (
+    isLoadingServices.value ||
+    isLoadingAppointments.value ||
+    isLoadingBookingHours.value ||
+    isLoadingBook.value ||
+    isLoadingDelete.value
+  );
+});
 
 // Calcola la data minima (oggi) e massima (ultimo giorno del mese successivo)
 const minDate = computed((): string => {
@@ -103,7 +118,7 @@ const futureAppointments = computed((): AppointmentListItem[] => {
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
-    isLoading.value = true;
+    isLoadingServices.value = true;
     const { data } = await axios.get<BookingServicesResponse>(
       apiUrl + "/api/services"
     );
@@ -111,13 +126,14 @@ const getServices = async (): Promise<void> => {
   } catch (e) {
     console.error(e);
   } finally {
-    isLoading.value = false;
+    isLoadingServices.value = false;
   }
 };
 
 const getAppointments = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
+    isLoadingAppointments.value = true;
     const { data } = await axios.get<GetAppointmentsResponse>(
       `${apiUrl}/api/appointments`
     );
@@ -126,6 +142,8 @@ const getAppointments = async (): Promise<void> => {
     appointmentConfig.value = data.config;
   } catch (error) {
     console.error("Error loading appointments:", error);
+  } finally {
+    isLoadingAppointments.value = false;
   }
 };
 
@@ -133,12 +151,15 @@ const getAppointments = async (): Promise<void> => {
 const getBookingHours = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
+    isLoadingBookingHours.value = true;
     const { data } = await axios.get<BookingHoursResponse>(
       `${apiUrl}/api/booking-hours`
     );
     bookingHours.value = data;
   } catch (error) {
     console.error("Error loading booking hours:", error);
+  } finally {
+    isLoadingBookingHours.value = false;
   }
 };
 
@@ -189,16 +210,16 @@ const handleBook = async (): Promise<void> => {
     return;
   }
 
+  const user = getUser();
+  if (!user) {
+    console.error("Utente non autenticato");
+    return;
+  }
+
   const apiUrl = import.meta.env.VITE_BASEURI as string;
-  isLoading.value = true;
+  isLoadingBook.value = true;
 
   try {
-    const user = getUser();
-    if (!user) {
-      console.error("Utente non autenticato");
-      return;
-    }
-
     const payload = {
       user_id: user.id,
       date: selectedDate.value,
@@ -266,7 +287,7 @@ const handleBook = async (): Promise<void> => {
       life: 5000,
     });
   } finally {
-    isLoading.value = false;
+    isLoadingBook.value = false;
   }
 };
 
@@ -326,7 +347,7 @@ const handleDeleteClick = (appointmentId: number): void => {
 
 const handleDeleteConfirm = async (appointmentId: number): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
-  isLoading.value = true;
+  isLoadingDelete.value = true;
 
   try {
     await axios.delete(`${apiUrl}/api/appointments/${appointmentId}`);
@@ -361,7 +382,7 @@ const handleDeleteConfirm = async (appointmentId: number): Promise<void> => {
       life: 5000,
     });
   } finally {
-    isLoading.value = false;
+    isLoadingDelete.value = false;
   }
 };
 
@@ -428,7 +449,7 @@ onMounted(() => {
       <section>
         <h2 class="mb-4 text-xl font-semibold">Prenota un appuntamento</h2>
         <Card>
-          <AppLoader v-if="isLoading" />
+          <AppLoader v-if="isPageLoading" />
 
           <div v-else class="flex flex-col gap-6">
             <!-- Parte 1: Servizi -->
@@ -492,6 +513,7 @@ onMounted(() => {
         </Card>
       </section>
     </div>
+    <AppLoader v-if="isPageLoading" />
   </PageLayout>
 </template>
 
