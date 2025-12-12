@@ -41,6 +41,7 @@ const menuItems = computed<MenuItem[]>(() => {
 const logout = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
+    await axios.get(apiUrl + "/sanctum/csrf-cookie");
     await axios.delete(apiUrl + "/api/logout");
     localStorage.removeItem("user");
     removeUser();
