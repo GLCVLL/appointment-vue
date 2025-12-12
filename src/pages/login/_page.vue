@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { setUser, User } from "@/store/auth";
 import { useApi } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
+import AppLoader from "@/components/AppLoader.vue";
 import { useNavigation } from "@/composables/useNavigation";
 import z from "zod";
 
@@ -37,6 +38,13 @@ const form = ref<FormData>({
 });
 
 const errors = ref<Errors>({});
+const isLoadingCsrfCookie = ref(false);
+const isLoadingLogin = ref(false);
+
+// Computed per gestire il loader di tutta la pagina
+const isPageLoading = computed((): boolean => {
+  return isLoadingCsrfCookie.value || isLoadingLogin.value;
+});
 
 // HANDLERS
 const submitForm = (): void => {
@@ -65,7 +73,11 @@ const submitForm = (): void => {
 const login = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
+    isLoadingCsrfCookie.value = true;
     await axios.get(apiUrl + "/sanctum/csrf-cookie");
+    isLoadingCsrfCookie.value = false;
+
+    isLoadingLogin.value = true;
     const { data } = await axios.post<User>(apiUrl + "/api/login", form.value);
 
     localStorage.user = JSON.stringify(data);
@@ -73,12 +85,16 @@ const login = async (): Promise<void> => {
     router.push("/");
   } catch (e) {
     errors.value = { generic: "Credentials are not valid" };
+  } finally {
+    isLoadingCsrfCookie.value = false;
+    isLoadingLogin.value = false;
   }
 };
 </script>
 
 <template>
   <PageLayout :links="authLinks">
+    <AppLoader v-if="isPageLoading" />
     <div class="flex justify-center items-center flex-1">
       <div class="w-full max-w-md">
         <Card title="Login" class="m-4">
