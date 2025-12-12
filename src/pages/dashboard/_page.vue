@@ -12,6 +12,7 @@ import { useNavigation } from "@/composables/useNavigation";
 import { format, addMonths, endOfMonth } from "date-fns";
 import { getUser } from "@/store/auth";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 import type {
   Service,
   BookingServicesResponse,
@@ -22,16 +23,33 @@ import type {
   SlotDay,
   TimeSlot,
 } from "@/types/api";
+import { AxiosError } from "axios";
 
 const axios = useApi();
 const { authLinks } = useNavigation();
 const toast = useToast();
+const confirm = useConfirm();
 
 const services = ref<Service[]>([]);
-const isLoading = ref(false);
+const isLoadingServices = ref(false);
+const isLoadingAppointments = ref(false);
+const isLoadingBookingHours = ref(false);
+const isLoadingBook = ref(false);
+const isLoadingDelete = ref(false);
 const selectedDate = ref<string | null>(null);
 const selectedTime = ref<string | null>(null);
 const selectedServices = ref<number[]>([]);
+
+// Computed per gestire il loader di tutta la pagina
+const isPageLoading = computed((): boolean => {
+  return (
+    isLoadingServices.value ||
+    isLoadingAppointments.value ||
+    isLoadingBookingHours.value ||
+    isLoadingBook.value ||
+    isLoadingDelete.value
+  );
+});
 
 // Calcola la data minima (oggi) e massima (ultimo giorno del mese successivo)
 const minDate = computed((): string => {
@@ -69,11 +87,38 @@ watch(selectedDate, (newValue) => {
 
 const appointments = ref<AppointmentListItem[]>([]);
 const bookingHours = ref<BookingHoursResponse | null>(null);
+const appointmentConfig = ref<{
+  cancellationHoursBefore: number;
+  bookingIntervalMinutes: number;
+} | null>(null);
+
+// Computed per filtrare gli appuntamenti passati
+const futureAppointments = computed((): AppointmentListItem[] => {
+  const now = new Date();
+  const today = format(now, "yyyy-MM-dd");
+
+  return appointments.value.filter((appointment) => {
+    const appointmentDate = appointment.date;
+
+    // Se la data è nel futuro, includi l'appuntamento
+    if (appointmentDate > today) {
+      return true;
+    }
+
+    // Se la data è oggi, includi sempre l'appuntamento
+    if (appointmentDate === today) {
+      return true;
+    }
+
+    // Se la data è nel passato, escludi l'appuntamento
+    return false;
+  });
+});
 
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
-    isLoading.value = true;
+    isLoadingServices.value = true;
     const { data } = await axios.get<BookingServicesResponse>(
       apiUrl + "/api/services"
     );
@@ -81,20 +126,24 @@ const getServices = async (): Promise<void> => {
   } catch (e) {
     console.error(e);
   } finally {
-    isLoading.value = false;
+    isLoadingServices.value = false;
   }
 };
 
 const getAppointments = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
+    isLoadingAppointments.value = true;
     const { data } = await axios.get<GetAppointmentsResponse>(
       `${apiUrl}/api/appointments`
     );
 
-    appointments.value = data;
+    appointments.value = data.appointments;
+    appointmentConfig.value = data.config;
   } catch (error) {
     console.error("Error loading appointments:", error);
+  } finally {
+    isLoadingAppointments.value = false;
   }
 };
 
@@ -102,12 +151,15 @@ const getAppointments = async (): Promise<void> => {
 const getBookingHours = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
   try {
+    isLoadingBookingHours.value = true;
     const { data } = await axios.get<BookingHoursResponse>(
       `${apiUrl}/api/booking-hours`
     );
     bookingHours.value = data;
   } catch (error) {
     console.error("Error loading booking hours:", error);
+  } finally {
+    isLoadingBookingHours.value = false;
   }
 };
 
@@ -158,16 +210,16 @@ const handleBook = async (): Promise<void> => {
     return;
   }
 
+  const user = getUser();
+  if (!user) {
+    console.error("Utente non autenticato");
+    return;
+  }
+
   const apiUrl = import.meta.env.VITE_BASEURI as string;
-  isLoading.value = true;
+  isLoadingBook.value = true;
 
   try {
-    const user = getUser();
-    if (!user) {
-      console.error("Utente non autenticato");
-      return;
-    }
-
     const payload = {
       user_id: user.id,
       date: selectedDate.value,
@@ -235,7 +287,7 @@ const handleBook = async (): Promise<void> => {
       life: 5000,
     });
   } finally {
-    isLoading.value = false;
+    isLoadingBook.value = false;
   }
 };
 
@@ -246,6 +298,92 @@ const formatDate = (dateString: string): string => {
     month: "short",
     year: "numeric",
   });
+};
+
+// Verifica se un appuntamento può essere cancellato
+const canCancelAppointment = (appointment: AppointmentListItem): boolean => {
+  if (!appointmentConfig.value) {
+    return true; // Se non c'è config, permette la cancellazione
+  }
+
+  const now = new Date();
+  const appointmentDate = appointment.date; // YYYY-MM-DD
+  const appointmentTime = appointment.startTime; // HH:mm
+
+  // Crea la data/ora dell'appuntamento
+  const [year, month, day] = appointmentDate.split("-").map(Number);
+  const [hours, minutes] = appointmentTime.split(":").map(Number);
+  const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
+
+  // Calcola la data/ora limite (appuntamento - ore di cancellazione)
+  const cancellationHours = appointmentConfig.value.cancellationHoursBefore;
+  const cancellationLimit = new Date(
+    appointmentDateTime.getTime() - cancellationHours * 60 * 60 * 1000
+  );
+
+  // Se ora è prima del limite, può essere cancellato
+  return now < cancellationLimit;
+};
+
+const handleDeleteClick = (appointmentId: number): void => {
+  confirm.require({
+    message:
+      "Sei sicuro di voler cancellare questo appuntamento? Questa azione non può essere annullata.",
+    header: "Conferma cancellazione",
+    rejectProps: {
+      label: "Annulla",
+      severity: "secondary",
+      outlined: true,
+    },
+    acceptProps: {
+      label: "Cancella",
+      severity: "primary",
+    },
+    accept: async () => {
+      await handleDeleteConfirm(appointmentId);
+    },
+  });
+};
+
+const handleDeleteConfirm = async (appointmentId: number): Promise<void> => {
+  const apiUrl = import.meta.env.VITE_BASEURI as string;
+  isLoadingDelete.value = true;
+
+  try {
+    await axios.delete(`${apiUrl}/api/appointments/${appointmentId}`);
+
+    // Ricarica gli appuntamenti
+    await getAppointments();
+
+    // Ricarica i booking hours per aggiornare gli slot disponibili
+    await getBookingHours();
+
+    // Mostra toast di successo
+    toast.add({
+      severity: "success",
+      summary: "Successo",
+      detail: "Appuntamento cancellato con successo",
+      life: 3000,
+    });
+  } catch (err: unknown) {
+    // Estrai il messaggio di errore dal backend
+    let errorMessage = "Si è verificato un errore durante la cancellazione";
+
+    if (err instanceof AxiosError) {
+      const responseData = err.response?.data;
+      errorMessage = responseData ? responseData.errors : errorMessage;
+    }
+
+    // Mostra toast di errore
+    toast.add({
+      severity: "error",
+      summary: "Errore",
+      detail: errorMessage,
+      life: 5000,
+    });
+  } finally {
+    isLoadingDelete.value = false;
+  }
 };
 
 onMounted(() => {
@@ -261,7 +399,7 @@ onMounted(() => {
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
-        <div v-if="appointments.length === 0" class="text-center py-8">
+        <div v-if="futureAppointments.length === 0" class="text-center py-8">
           <div class="text-primary-400 mb-4 flex justify-center">
             <Icon name="calendar" size="64px" />
           </div>
@@ -272,9 +410,9 @@ onMounted(() => {
           class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
         >
           <Card
-            v-for="appointment in appointments"
+            v-for="appointment in futureAppointments"
             :key="appointment.id"
-            class="aspect-square max-w-[200px]"
+            class="aspect-square max-w-[200px] relative"
           >
             <div class="flex flex-col h-full justify-between">
               <div>
@@ -294,6 +432,15 @@ onMounted(() => {
                 </div>
               </div>
             </div>
+
+            <Button
+              icon="delete"
+              theme="danger"
+              variant="text"
+              :disabled="!canCancelAppointment(appointment)"
+              @click="handleDeleteClick(appointment.id)"
+              class="absolute top-2 right-2"
+            />
           </Card>
         </div>
       </section>
@@ -302,7 +449,7 @@ onMounted(() => {
       <section>
         <h2 class="mb-4 text-xl font-semibold">Prenota un appuntamento</h2>
         <Card>
-          <AppLoader v-if="isLoading" />
+          <AppLoader v-if="isPageLoading" />
 
           <div v-else class="flex flex-col gap-6">
             <!-- Parte 1: Servizi -->
@@ -366,6 +513,7 @@ onMounted(() => {
         </Card>
       </section>
     </div>
+    <AppLoader v-if="isPageLoading" />
   </PageLayout>
 </template>
 

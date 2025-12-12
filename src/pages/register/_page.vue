@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useApi } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
+import AppLoader from "@/components/AppLoader.vue";
 import { useNavigation } from "@/composables/useNavigation";
 import z from "zod";
 
@@ -59,9 +60,15 @@ const form = ref<FormData>({
   password_confirmation: "",
 });
 
-const isLoading = ref(false);
+const isLoadingCsrfCookie = ref(false);
+const isLoadingRegister = ref(false);
 const isUserCreated = ref(false);
 const errors = ref<Errors>({});
+
+// Computed per gestire il loader di tutta la pagina
+const isPageLoading = computed((): boolean => {
+  return isLoadingCsrfCookie.value || isLoadingRegister.value;
+});
 
 // HANDLERS
 const submitForm = (): void => {
@@ -89,10 +96,13 @@ const submitForm = (): void => {
 
 const register = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
-  isLoading.value = true;
 
   try {
+    isLoadingCsrfCookie.value = true;
     await axios.get(apiUrl + "/sanctum/csrf-cookie");
+    isLoadingCsrfCookie.value = false;
+
+    isLoadingRegister.value = true;
     // Concatenate first_name and last_name with a space for the backend
     const { first_name, last_name, ...rest } = form.value;
     const payload = {
@@ -127,13 +137,15 @@ const register = async (): Promise<void> => {
       errors.value.generic = "Qualcosa è andato storto";
     }
   } finally {
-    isLoading.value = false;
+    isLoadingCsrfCookie.value = false;
+    isLoadingRegister.value = false;
   }
 };
 </script>
 
 <template>
   <PageLayout :links="authLinks">
+    <AppLoader v-if="isPageLoading" />
     <div class="flex justify-center items-center flex-1">
       <div class="w-full max-w-md">
         <Card v-if="!isUserCreated" title="Registrazione" class="m-4">

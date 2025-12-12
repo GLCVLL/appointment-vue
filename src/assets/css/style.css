@@ -19,6 +19,12 @@ body {
   --p-primary-800: #6d474b;
   --p-primary-900: #4a3032;
   --p-primary-950: #500724;
+
+  /* ProgressSpinner */
+  --p-progressspinner-color-one: #faf7f8;
+  --p-progressspinner-color-two: #f5eef0;
+  --p-progressspinner-color-three: #e8d5d9;
+  --p-progressspinner-color-four: #d9b8bd;
 }
 
 /* Disabilita il dark mode per PrimeVue */
