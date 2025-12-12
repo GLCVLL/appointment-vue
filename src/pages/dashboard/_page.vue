@@ -317,10 +317,72 @@ const handleDeleteClick = (appointmentId: number): void => {
       label: "Cancella",
       severity: "primary",
     },
-    accept: () => {
-      console.log("Cancellazione appuntamento:", appointmentId);
+    accept: async () => {
+      await handleDeleteConfirm(appointmentId);
     },
   });
+};
+
+const handleDeleteConfirm = async (appointmentId: number): Promise<void> => {
+  const apiUrl = import.meta.env.VITE_BASEURI as string;
+  isLoading.value = true;
+
+  try {
+    await axios.delete(`${apiUrl}/api/appointments/${appointmentId}`);
+
+    // Ricarica gli appuntamenti
+    await getAppointments();
+
+    // Ricarica i booking hours per aggiornare gli slot disponibili
+    await getBookingHours();
+
+    // Mostra toast di successo
+    toast.add({
+      severity: "success",
+      summary: "Successo",
+      detail: "Appuntamento cancellato con successo",
+      life: 3000,
+    });
+  } catch (err: unknown) {
+    const axiosError = err as {
+      response?: {
+        status?: number;
+        data?: {
+          errors?: Record<string, string[]>;
+          message?: string;
+          appErrors?: string;
+        };
+      };
+    };
+
+    // Estrai il messaggio di errore dal backend
+    let errorMessage = "Si è verificato un errore durante la cancellazione";
+
+    if (axiosError.response?.data) {
+      const responseData = axiosError.response.data;
+
+      if (responseData.appErrors) {
+        errorMessage = responseData.appErrors;
+      } else if (responseData.message) {
+        errorMessage = responseData.message;
+      } else if (responseData.errors) {
+        const firstError = Object.values(responseData.errors)[0];
+        if (Array.isArray(firstError) && firstError.length > 0) {
+          errorMessage = firstError[0];
+        }
+      }
+    }
+
+    // Mostra toast di errore
+    toast.add({
+      severity: "error",
+      summary: "Errore",
+      detail: errorMessage,
+      life: 5000,
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 onMounted(() => {
@@ -374,7 +436,6 @@ onMounted(() => {
               icon="delete"
               theme="danger"
               variant="text"
-              :disabled="!canCancelAppointment(appointment)"
               @click="handleDeleteClick(appointment.id)"
               class="absolute top-2 right-2"
             />
