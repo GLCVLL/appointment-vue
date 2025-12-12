@@ -278,6 +278,31 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+// Verifica se un appuntamento può essere cancellato
+const canCancelAppointment = (appointment: AppointmentListItem): boolean => {
+  if (!appointmentConfig.value) {
+    return true; // Se non c'è config, permette la cancellazione
+  }
+
+  const now = new Date();
+  const appointmentDate = appointment.date; // YYYY-MM-DD
+  const appointmentTime = appointment.startTime; // HH:mm
+
+  // Crea la data/ora dell'appuntamento
+  const [year, month, day] = appointmentDate.split("-").map(Number);
+  const [hours, minutes] = appointmentTime.split(":").map(Number);
+  const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
+
+  // Calcola la data/ora limite (appuntamento - ore di cancellazione)
+  const cancellationHours = appointmentConfig.value.cancellationHoursBefore;
+  const cancellationLimit = new Date(
+    appointmentDateTime.getTime() - cancellationHours * 60 * 60 * 1000
+  );
+
+  // Se ora è prima del limite, può essere cancellato
+  return now < cancellationLimit;
+};
+
 const handleDeleteClick = (appointmentId: number): void => {
   confirm.require({
     message:
@@ -349,6 +374,7 @@ onMounted(() => {
               icon="delete"
               theme="danger"
               variant="text"
+              :disabled="!canCancelAppointment(appointment)"
               @click="handleDeleteClick(appointment.id)"
               class="absolute top-2 right-2"
             />
