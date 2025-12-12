@@ -1,18 +1,11 @@
 <script setup lang="ts">
-// No props or logic needed for this component
+import ProgressSpinner from "primevue/progressspinner";
 </script>
 
 <template>
-    <div class="app-loader"><i class="fas fa-spinner fa-5x fa-spin-pulse"></i></div>
+  <div
+    class="fixed inset-0 flex items-center justify-center bg-gray-900/50 z-50"
+  >
+    <ProgressSpinner aria-label="Caricamento" />
+  </div>
 </template>
-
-<style scoped>
-.app-loader {
-    position: fixed;
-    inset: 0;
-    background-color: #d2d2d2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-</style>
