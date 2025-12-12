@@ -416,6 +416,7 @@ onMounted(() => {
               icon="delete"
               theme="danger"
               variant="text"
+              :disabled="!canCancelAppointment(appointment)"
               @click="handleDeleteClick(appointment.id)"
               class="absolute top-2 right-2"
             />
