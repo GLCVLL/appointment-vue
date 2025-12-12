@@ -23,6 +23,7 @@ import type {
   SlotDay,
   TimeSlot,
 } from "@/types/api";
+import { AxiosError } from "axios";
 
 const axios = useApi();
 const { authLinks } = useNavigation();
@@ -344,33 +345,12 @@ const handleDeleteConfirm = async (appointmentId: number): Promise<void> => {
       life: 3000,
     });
   } catch (err: unknown) {
-    const axiosError = err as {
-      response?: {
-        status?: number;
-        data?: {
-          errors?: Record<string, string[]>;
-          message?: string;
-          appErrors?: string;
-        };
-      };
-    };
-
     // Estrai il messaggio di errore dal backend
     let errorMessage = "Si è verificato un errore durante la cancellazione";
 
-    if (axiosError.response?.data) {
-      const responseData = axiosError.response.data;
-
-      if (responseData.appErrors) {
-        errorMessage = responseData.appErrors;
-      } else if (responseData.message) {
-        errorMessage = responseData.message;
-      } else if (responseData.errors) {
-        const firstError = Object.values(responseData.errors)[0];
-        if (Array.isArray(firstError) && firstError.length > 0) {
-          errorMessage = firstError[0];
-        }
-      }
+    if (err instanceof AxiosError) {
+      const responseData = err.response?.data;
+      errorMessage = responseData ? responseData.errors : errorMessage;
     }
 
     // Mostra toast di errore
