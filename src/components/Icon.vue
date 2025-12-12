@@ -26,6 +26,8 @@ const iconsMap = {
   palette: "palette",
   brush: "brush",
   calendar: "event",
+  delete: "delete",
+  trash: "delete",
 } as const;
 export type IconName = keyof typeof iconsMap;
 

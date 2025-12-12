@@ -12,6 +12,7 @@ import { useNavigation } from "@/composables/useNavigation";
 import { format, addMonths, endOfMonth } from "date-fns";
 import { getUser } from "@/store/auth";
 import { useToast } from "primevue/usetoast";
+import { useConfirm } from "primevue/useconfirm";
 import type {
   Service,
   BookingServicesResponse,
@@ -26,6 +27,7 @@ import type {
 const axios = useApi();
 const { authLinks } = useNavigation();
 const toast = useToast();
+const confirm = useConfirm();
 
 const services = ref<Service[]>([]);
 const isLoading = ref(false);
@@ -248,6 +250,26 @@ const formatDate = (dateString: string): string => {
   });
 };
 
+const handleDeleteClick = (appointmentId: number): void => {
+  confirm.require({
+    message:
+      "Sei sicuro di voler cancellare questo appuntamento? Questa azione non può essere annullata.",
+    header: "Conferma cancellazione",
+    rejectProps: {
+      label: "Annulla",
+      severity: "secondary",
+      outlined: true,
+    },
+    acceptProps: {
+      label: "Cancella",
+      severity: "primary",
+    },
+    accept: () => {
+      console.log("Cancellazione appuntamento:", appointmentId);
+    },
+  });
+};
+
 onMounted(() => {
   getServices();
   getBookingHours();
@@ -274,7 +296,7 @@ onMounted(() => {
           <Card
             v-for="appointment in appointments"
             :key="appointment.id"
-            class="aspect-square max-w-[200px]"
+            class="aspect-square max-w-[200px] relative"
           >
             <div class="flex flex-col h-full justify-between">
               <div>
@@ -294,6 +316,14 @@ onMounted(() => {
                 </div>
               </div>
             </div>
+
+            <Button
+              icon="delete"
+              theme="danger"
+              variant="text"
+              @click="handleDeleteClick(appointment.id)"
+              class="absolute top-2 right-2"
+            />
           </Card>
         </div>
       </section>
