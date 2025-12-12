@@ -7,7 +7,13 @@ export interface AppointmentListItem {
   startTime: string; // Format: HH:mm
   services: string[]; // Array of service names
 }
-export type GetAppointmentsResponse = AppointmentListItem[];
+export interface GetAppointmentsResponse {
+  appointments: AppointmentListItem[];
+  config: {
+    cancellationHoursBefore: number;
+    bookingIntervalMinutes: number;
+  };
+}
 
 // ============================================
 // POST /api/appointments (store)

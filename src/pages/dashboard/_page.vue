@@ -71,6 +71,33 @@ watch(selectedDate, (newValue) => {
 
 const appointments = ref<AppointmentListItem[]>([]);
 const bookingHours = ref<BookingHoursResponse | null>(null);
+const appointmentConfig = ref<{
+  cancellationHoursBefore: number;
+  bookingIntervalMinutes: number;
+} | null>(null);
+
+// Computed per filtrare gli appuntamenti passati
+const futureAppointments = computed((): AppointmentListItem[] => {
+  const now = new Date();
+  const today = format(now, "yyyy-MM-dd");
+
+  return appointments.value.filter((appointment) => {
+    const appointmentDate = appointment.date;
+
+    // Se la data è nel futuro, includi l'appuntamento
+    if (appointmentDate > today) {
+      return true;
+    }
+
+    // Se la data è oggi, includi sempre l'appuntamento
+    if (appointmentDate === today) {
+      return true;
+    }
+
+    // Se la data è nel passato, escludi l'appuntamento
+    return false;
+  });
+});
 
 const getServices = async (): Promise<void> => {
   const apiUrl = import.meta.env.VITE_BASEURI as string;
@@ -94,7 +121,8 @@ const getAppointments = async (): Promise<void> => {
       `${apiUrl}/api/appointments`
     );
 
-    appointments.value = data;
+    appointments.value = data.appointments;
+    appointmentConfig.value = data.config;
   } catch (error) {
     console.error("Error loading appointments:", error);
   }
@@ -283,7 +311,7 @@ onMounted(() => {
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
-        <div v-if="appointments.length === 0" class="text-center py-8">
+        <div v-if="futureAppointments.length === 0" class="text-center py-8">
           <div class="text-primary-400 mb-4 flex justify-center">
             <Icon name="calendar" size="64px" />
           </div>
@@ -294,7 +322,7 @@ onMounted(() => {
           class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
         >
           <Card
-            v-for="appointment in appointments"
+            v-for="appointment in futureAppointments"
             :key="appointment.id"
             class="aspect-square max-w-[200px] relative"
           >
