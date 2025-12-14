@@ -1,5 +1,4 @@
 import axiosInstance from "@/api/axios";
-import type { AxiosInstance } from "axios";
 import type {
   Service,
   BookingServicesResponse,
@@ -9,11 +8,9 @@ import type {
   CreateAppointmentRequest,
   LoginRequest,
   LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
 } from "@/types/api";
-
-export function useApi(): AxiosInstance {
-  return axiosInstance;
-}
 
 const apiUrl = import.meta.env.VITE_BASEURI as string;
 
@@ -75,4 +72,14 @@ export async function logout(): Promise<void> {
   await axiosInstance.get(`${apiUrl}/sanctum/csrf-cookie`);
   // Poi facciamo il logout
   await axiosInstance.delete(`${apiUrl}/api/logout`);
+}
+
+// POST /api/register
+export async function register(
+  payload: RegisterRequest
+): Promise<RegisterResponse> {
+  // Prima otteniamo il CSRF cookie
+  await axiosInstance.get(`${apiUrl}/sanctum/csrf-cookie`);
+  // Poi facciamo la registrazione
+  await axiosInstance.post(`${apiUrl}/api/register`, payload);
 }

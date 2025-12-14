@@ -76,3 +76,16 @@ export interface LoginRequest {
 }
 
 export type LoginResponse = User;
+
+// ============================================
+// POST /api/register
+// ============================================
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  phone_number: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export type RegisterResponse = void;

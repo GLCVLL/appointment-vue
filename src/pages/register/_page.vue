@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { useApi } from "@/composables/useApi";
+import { useMutation } from "@tanstack/vue-query";
+import { register as registerApi } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
 import AppLoader from "@/components/AppLoader.vue";
 import { useNavigation } from "@/composables/useNavigation";
+import type { RegisterRequest } from "@/types/api";
 import z from "zod";
 
 interface FormData {
@@ -25,7 +27,6 @@ interface Errors {
 // DATA
 const { authLinks } = useNavigation();
 const router = useRouter();
-const axios = useApi();
 
 const schema = z
   .object({
@@ -60,58 +61,16 @@ const form = ref<FormData>({
   password_confirmation: "",
 });
 
-const isLoadingCsrfCookie = ref(false);
-const isLoadingRegister = ref(false);
 const isUserCreated = ref(false);
 const errors = ref<Errors>({});
 
-// Computed per gestire il loader di tutta la pagina
-const isPageLoading = computed((): boolean => {
-  return isLoadingCsrfCookie.value || isLoadingRegister.value;
-});
-
-// HANDLERS
-const submitForm = (): void => {
-  errors.value = {};
-
-  // Validate form data
-  const result = schema.safeParse(form.value);
-
-  if (!result.success) {
-    const treeErrors = z.treeifyError(result.error);
-
-    if (treeErrors.properties) {
-      errors.value = Object.fromEntries(
-        Object.entries(treeErrors.properties).map(([key, value]) => [
-          key,
-          value.errors[0],
-        ])
-      );
-    }
-    return;
-  }
-
-  register();
-};
-
-const register = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-
-  try {
-    isLoadingCsrfCookie.value = true;
-    await axios.get(apiUrl + "/sanctum/csrf-cookie");
-    isLoadingCsrfCookie.value = false;
-
-    isLoadingRegister.value = true;
-    // Concatenate first_name and last_name with a space for the backend
-    const { first_name, last_name, ...rest } = form.value;
-    const payload = {
-      ...rest,
-      name: `${first_name} ${last_name}`.trim(),
-    };
-    await axios.post(`${apiUrl}/api/register`, payload);
+// MUTATION
+const mRegister = useMutation({
+  mutationFn: (payload: RegisterRequest) => registerApi(payload),
+  onSuccess: () => {
     isUserCreated.value = true;
-  } catch (err: unknown) {
+  },
+  onError: (err: unknown) => {
     const axiosError = err as {
       response?: {
         status?: number;
@@ -136,10 +95,43 @@ const register = async (): Promise<void> => {
     } else {
       errors.value.generic = "Qualcosa è andato storto";
     }
-  } finally {
-    isLoadingCsrfCookie.value = false;
-    isLoadingRegister.value = false;
+  },
+});
+
+// Computed per gestire il loader di tutta la pagina
+const isPageLoading = computed((): boolean => {
+  return mRegister.isPending.value;
+});
+
+// HANDLERS
+const submitForm = (): void => {
+  errors.value = {};
+
+  // Validate form data
+  const result = schema.safeParse(form.value);
+
+  if (!result.success) {
+    const treeErrors = z.treeifyError(result.error);
+
+    if (treeErrors.properties) {
+      errors.value = Object.fromEntries(
+        Object.entries(treeErrors.properties).map(([key, value]) => [
+          key,
+          value.errors[0],
+        ])
+      );
+    }
+    return;
   }
+
+  // Concatenate first_name and last_name with a space for the backend
+  const { first_name, last_name, ...rest } = form.value;
+  const payload: RegisterRequest = {
+    ...rest,
+    name: `${first_name} ${last_name}`.trim(),
+  };
+
+  mRegister.mutate(payload);
 };
 </script>
 
@@ -294,5 +286,3 @@ const register = async (): Promise<void> => {
     </div>
   </PageLayout>
 </template>
-
-<style></style>
