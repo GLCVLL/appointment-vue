@@ -7,10 +7,12 @@ import { definePreset } from "@primeuix/themes";
 import App from "@/App.vue";
 import router from "@/routes/routes";
 import "@/assets/css/style.css";
+import { VueQueryPlugin } from "@tanstack/vue-query";
 
 const app = createApp(App);
 
 app.use(router);
+app.use(VueQueryPlugin);
 app.use(ToastService);
 app.use(ConfirmationService);
 
