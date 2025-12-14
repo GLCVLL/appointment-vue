@@ -7,6 +7,8 @@ import type {
   BookingHoursResponse,
   CreateAppointmentSuccessResponse,
   CreateAppointmentRequest,
+  LoginRequest,
+  LoginResponse,
 } from "@/types/api";
 
 export function useApi(): AxiosInstance {
@@ -53,4 +55,24 @@ export async function createAppointment(
 // DELETE /api/appointments/:id
 export async function deleteAppointment(appointmentId: number): Promise<void> {
   await axiosInstance.delete(`${apiUrl}/api/appointments/${appointmentId}`);
+}
+
+// POST /api/login
+export async function login(payload: LoginRequest): Promise<LoginResponse> {
+  // Prima otteniamo il CSRF cookie
+  await axiosInstance.get(`${apiUrl}/sanctum/csrf-cookie`);
+  // Poi facciamo il login
+  const { data } = await axiosInstance.post<LoginResponse>(
+    `${apiUrl}/api/login`,
+    payload
+  );
+  return data;
+}
+
+// DELETE /api/logout
+export async function logout(): Promise<void> {
+  // Prima otteniamo il CSRF cookie
+  await axiosInstance.get(`${apiUrl}/sanctum/csrf-cookie`);
+  // Poi facciamo il logout
+  await axiosInstance.delete(`${apiUrl}/api/logout`);
 }

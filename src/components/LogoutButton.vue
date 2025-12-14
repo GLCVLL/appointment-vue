@@ -1,22 +1,25 @@
 <script setup lang="ts">
 import { isLogged, removeUser } from "@/store/auth";
 import { useRouter } from "vue-router";
-import { useApi } from "@/composables/useApi";
+import { useMutation } from "@tanstack/vue-query";
+import { logout as logoutApi } from "@/composables/useApi";
 
 const router = useRouter();
-const axios = useApi();
 
-const logout = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    await axios.get(apiUrl + "/sanctum/csrf-cookie");
-    await axios.delete(apiUrl + "/api/logout");
+const mLogout = useMutation({
+  mutationFn: logoutApi,
+  onSuccess: () => {
     localStorage.removeItem("user");
     removeUser();
     router.push({ name: "login" });
-  } catch (e) {
+  },
+  onError: (e) => {
     console.error(e);
-  }
+  },
+});
+
+const logout = (): void => {
+  mLogout.mutate();
 };
 </script>
 

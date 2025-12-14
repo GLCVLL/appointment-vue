@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { PropType, watch } from "vue";
 import { useMediaQuery } from "@vueuse/core";
+import { useMutation } from "@tanstack/vue-query";
 import Drawer from "primevue/drawer";
 import AppLogo from "@/components/AppLogo.vue";
 import { isLogged, removeUser } from "@/store/auth";
 import UserProfile from "@/components/UserProfile.vue";
 import { useRouter } from "vue-router";
-import { useApi } from "@/composables/useApi";
+import { logout as logoutApi } from "@/composables/useApi";
 import { Link } from "@/composables/useNavigation";
 
 const props = defineProps({
@@ -27,8 +28,21 @@ const emits = defineEmits({
 
 // DATA
 const router = useRouter();
-const axios = useApi();
 const isDesktop = useMediaQuery("(min-width: 768px)");
+
+// MUTATION
+const mLogout = useMutation({
+  mutationFn: logoutApi,
+  onSuccess: () => {
+    localStorage.removeItem("user");
+    removeUser();
+    router.push({ name: "home" });
+    closeMenu();
+  },
+  onError: (e) => {
+    console.error(e);
+  },
+});
 
 // HANDLERS
 const closeMenu = (): void => {
@@ -36,18 +50,8 @@ const closeMenu = (): void => {
   emits("close");
 };
 
-const logout = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    await axios.get(apiUrl + "/sanctum/csrf-cookie");
-    await axios.delete(apiUrl + "/api/logout");
-    localStorage.removeItem("user");
-    removeUser();
-    router.push({ name: "home" });
-    closeMenu();
-  } catch (e) {
-    console.error(e);
-  }
+const logout = (): void => {
+  mLogout.mutate();
 };
 
 // Chiudi il menu quando passiamo a desktop

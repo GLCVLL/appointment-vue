@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { setUser, User } from "@/store/auth";
-import { useApi } from "@/composables/useApi";
+import { useMutation } from "@tanstack/vue-query";
+import { setUser } from "@/store/auth";
+import { login } from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Card from "@/components/Card.vue";
 import Button from "@/components/Button.vue";
 import AppLoader from "@/components/AppLoader.vue";
 import { useNavigation } from "@/composables/useNavigation";
+import type { LoginRequest } from "@/types/api";
 import z from "zod";
 
 interface FormData {
@@ -30,7 +32,6 @@ const schema = z.object({
 // DATA
 const { authLinks } = useNavigation();
 const router = useRouter();
-const axios = useApi();
 
 const form = ref<FormData>({
   email: "",
@@ -38,12 +39,23 @@ const form = ref<FormData>({
 });
 
 const errors = ref<Errors>({});
-const isLoadingCsrfCookie = ref(false);
-const isLoadingLogin = ref(false);
+
+// MUTATION
+const mLogin = useMutation({
+  mutationFn: (payload: LoginRequest) => login(payload),
+  onSuccess: (data) => {
+    localStorage.user = JSON.stringify(data);
+    setUser(data);
+    router.push("/");
+  },
+  onError: () => {
+    errors.value = { generic: "Credentials are not valid" };
+  },
+});
 
 // Computed per gestire il loader di tutta la pagina
 const isPageLoading = computed((): boolean => {
-  return isLoadingCsrfCookie.value || isLoadingLogin.value;
+  return mLogin.isPending.value;
 });
 
 // HANDLERS
@@ -67,28 +79,10 @@ const submitForm = (): void => {
     return;
   }
 
-  login();
-};
-
-const login = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    isLoadingCsrfCookie.value = true;
-    await axios.get(apiUrl + "/sanctum/csrf-cookie");
-    isLoadingCsrfCookie.value = false;
-
-    isLoadingLogin.value = true;
-    const { data } = await axios.post<User>(apiUrl + "/api/login", form.value);
-
-    localStorage.user = JSON.stringify(data);
-    setUser(data);
-    router.push("/");
-  } catch (e) {
-    errors.value = { generic: "Credentials are not valid" };
-  } finally {
-    isLoadingCsrfCookie.value = false;
-    isLoadingLogin.value = false;
-  }
+  mLogin.mutate({
+    email: form.value.email,
+    password: form.value.password,
+  });
 };
 </script>
 

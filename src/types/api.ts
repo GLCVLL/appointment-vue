@@ -64,3 +64,15 @@ export interface BookingServicesResponse {
   categories: Category[];
   services: Service[];
 }
+
+// ============================================
+// POST /api/login
+// ============================================
+import type { User } from "@/store/auth";
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export type LoginResponse = User;
