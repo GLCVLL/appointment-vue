@@ -1,7 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import AppLoader from "@/components/AppLoader.vue";
-import { useApi } from "@/composables/useApi";
+import {
+  getServices,
+  getAppointments,
+  getBookingHours,
+  createAppointment,
+  deleteAppointment,
+} from "@/composables/useApi";
 import PageLayout from "@/components/PageLayout.vue";
 import Button from "@/components/Button.vue";
 import Card from "@/components/Card.vue";
@@ -14,58 +21,76 @@ import { getUser } from "@/store/auth";
 import { useToast } from "primevue/usetoast";
 import { useConfirm } from "primevue/useconfirm";
 import type {
-  Service,
-  BookingServicesResponse,
-  GetAppointmentsResponse,
   AppointmentListItem,
-  BookingHoursResponse,
-  CreateAppointmentSuccessResponse,
+  CreateAppointmentRequest,
   SlotDay,
   TimeSlot,
 } from "@/types/api";
 import { AxiosError } from "axios";
 
-const axios = useApi();
+// DATA
 const { authLinks } = useNavigation();
 const toast = useToast();
 const confirm = useConfirm();
 
-const services = ref<Service[]>([]);
-const isLoadingServices = ref(false);
-const isLoadingAppointments = ref(false);
-const isLoadingBookingHours = ref(false);
-const isLoadingBook = ref(false);
-const isLoadingDelete = ref(false);
 const selectedDate = ref<string | null>(null);
 const selectedTime = ref<string | null>(null);
 const selectedServices = ref<number[]>([]);
 
-// Computed per gestire il loader di tutta la pagina
-const isPageLoading = computed((): boolean => {
-  return (
-    isLoadingServices.value ||
-    isLoadingAppointments.value ||
-    isLoadingBookingHours.value ||
-    isLoadingBook.value ||
-    isLoadingDelete.value
-  );
+const hasSelectedServices = computed((): boolean => {
+  return selectedServices.value.length > 0;
 });
 
-// Calcola la data minima (oggi) e massima (ultimo giorno del mese successivo)
-const minDate = computed((): string => {
+const appMinDate = computed((): string => {
   return format(new Date(), "yyyy-MM-dd");
 });
-
-const maxDate = computed((): string => {
+const appMaxDate = computed((): string => {
   const nextMonth = addMonths(new Date(), 1);
   const lastDayOfNextMonth = endOfMonth(nextMonth);
   return format(lastDayOfNextMonth, "yyyy-MM-dd");
 });
 
-// Computed per verificare se ci sono servizi selezionati
-const hasSelectedServices = computed((): boolean => {
-  return selectedServices.value.length > 0;
+// API
+const apiUtils = useQueryClient();
+const qGetServices = useQuery({
+  queryKey: ["qGetServices"],
+  queryFn: getServices,
 });
+const services = computed(() => qGetServices.data.value ?? []);
+
+const qGetAppointments = useQuery({
+  queryKey: ["qGetAppointments"],
+  queryFn: getAppointments,
+});
+const appointments = computed(
+  () => qGetAppointments.data.value?.appointments ?? []
+);
+const appointmentConfig = computed(
+  () => qGetAppointments.data.value?.config ?? null
+);
+const filteredAppointments = computed((): AppointmentListItem[] => {
+  return appointments.value.filter((appointment) => {
+    const appointmentDate = appointment.date;
+    const today = format(new Date(), "yyyy-MM-dd");
+    return appointmentDate >= today;
+  });
+});
+
+const qGetBookingHours = useQuery({
+  queryKey: ["qGetBookingHours"],
+  queryFn: getBookingHours,
+});
+const bookingHours = computed(() => qGetBookingHours.data.value ?? null);
+
+const isLoading = computed(() =>
+  [
+    qGetServices.isFetching.value,
+    qGetAppointments.isFetching.value,
+    qGetBookingHours.isFetching.value,
+    mDeleteAppointment.isPending.value,
+    mCreateAppointment.isPending.value,
+  ].some(Boolean)
+);
 
 // Watcher per resettare la data quando non ci sono servizi selezionati
 watch(selectedServices, (newValue) => {
@@ -81,164 +106,21 @@ watch(selectedDate, (newValue) => {
     selectedTime.value = null;
   } else {
     // Ricarica i booking hours quando cambia la data per avere dati aggiornati
-    getBookingHours();
+    apiUtils.invalidateQueries({ queryKey: ["qGetBookingHours"] });
   }
 });
 
-const appointments = ref<AppointmentListItem[]>([]);
-const bookingHours = ref<BookingHoursResponse | null>(null);
-const appointmentConfig = ref<{
-  cancellationHoursBefore: number;
-  bookingIntervalMinutes: number;
-} | null>(null);
-
-// Computed per filtrare gli appuntamenti passati
-const futureAppointments = computed((): AppointmentListItem[] => {
-  const now = new Date();
-  const today = format(now, "yyyy-MM-dd");
-
-  return appointments.value.filter((appointment) => {
-    const appointmentDate = appointment.date;
-
-    // Se la data è nel futuro, includi l'appuntamento
-    if (appointmentDate > today) {
-      return true;
-    }
-
-    // Se la data è oggi, includi sempre l'appuntamento
-    if (appointmentDate === today) {
-      return true;
-    }
-
-    // Se la data è nel passato, escludi l'appuntamento
-    return false;
-  });
-});
-
-const getServices = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    isLoadingServices.value = true;
-    const { data } = await axios.get<BookingServicesResponse>(
-      apiUrl + "/api/services"
-    );
-    services.value = data.services;
-  } catch (e) {
-    console.error(e);
-  } finally {
-    isLoadingServices.value = false;
-  }
-};
-
-const getAppointments = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    isLoadingAppointments.value = true;
-    const { data } = await axios.get<GetAppointmentsResponse>(
-      `${apiUrl}/api/appointments`
-    );
-
-    appointments.value = data.appointments;
-    appointmentConfig.value = data.config;
-  } catch (error) {
-    console.error("Error loading appointments:", error);
-  } finally {
-    isLoadingAppointments.value = false;
-  }
-};
-
-// Fetches booking hours data from the server
-const getBookingHours = async (): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  try {
-    isLoadingBookingHours.value = true;
-    const { data } = await axios.get<BookingHoursResponse>(
-      `${apiUrl}/api/booking-hours`
-    );
-    bookingHours.value = data;
-  } catch (error) {
-    console.error("Error loading booking hours:", error);
-  } finally {
-    isLoadingBookingHours.value = false;
-  }
-};
-
-// Computed per ottenere gli slot per la data selezionata
-const availableTimeSlots = computed((): TimeSlot[] => {
-  if (!selectedDate.value || !bookingHours.value) {
-    return [];
-  }
-
-  // Se la data è un giorno chiuso, non ci sono slot disponibili
-  if (bookingHours.value.closedDays.includes(selectedDate.value)) {
-    return [];
-  }
-
-  // Trova il SlotDay corrispondente alla data selezionata
-  const slotDay = bookingHours.value.slotDays.find(
-    (day: SlotDay) => day.date === selectedDate.value
-  );
-
-  // Se non esiste un SlotDay per questa data, non ci sono slot disponibili
-  if (!slotDay) {
-    return [];
-  }
-
-  // Restituisce tutti gli slot per questa data (sia disponibili che prenotati)
-  return slotDay.slots;
-});
-
-// Watcher per resettare lo slot selezionato se non è più disponibile
-watch(availableTimeSlots, (newSlots) => {
-  if (selectedTime.value) {
-    const slotExists = newSlots.some(
-      (slot) => slot.hour === selectedTime.value
-    );
-    if (!slotExists) {
-      selectedTime.value = null;
-    }
-  }
-});
-
-const handleBook = async (): Promise<void> => {
-  // Validazione: verifica che tutti i campi siano selezionati
-  if (
-    !selectedDate.value ||
-    !selectedTime.value ||
-    selectedServices.value.length === 0
-  ) {
-    return;
-  }
-
-  const user = getUser();
-  if (!user) {
-    console.error("Utente non autenticato");
-    return;
-  }
-
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  isLoadingBook.value = true;
-
-  try {
-    const payload = {
-      user_id: user.id,
-      date: selectedDate.value,
-      start_time: selectedTime.value,
-      services: selectedServices.value,
-    };
-
-    await axios.post<CreateAppointmentSuccessResponse>(
-      `${apiUrl}/api/appointments`,
-      payload
-    );
-
+const mCreateAppointment = useMutation({
+  mutationFn: (payload: CreateAppointmentRequest) => createAppointment(payload),
+  onSuccess: () => {
     // Reset form dopo il successo
     selectedDate.value = null;
     selectedTime.value = null;
     selectedServices.value = [];
 
-    // Ricarica gli appuntamenti e i booking hours
-    await Promise.all([getAppointments(), getBookingHours()]);
+    // Invalida e ricarica le query
+    apiUtils.invalidateQueries({ queryKey: ["qGetAppointments"] });
+    apiUtils.invalidateQueries({ queryKey: ["qGetBookingHours"] });
 
     // Mostra toast di successo
     toast.add({
@@ -247,7 +129,8 @@ const handleBook = async (): Promise<void> => {
       detail: "Appuntamento prenotato con successo",
       life: 3000,
     });
-  } catch (err: unknown) {
+  },
+  onError: (err: unknown) => {
     const axiosError = err as {
       response?: {
         status?: number;
@@ -286,17 +169,101 @@ const handleBook = async (): Promise<void> => {
       detail: errorMessage,
       life: 5000,
     });
-  } finally {
-    isLoadingBook.value = false;
-  }
-};
+  },
+});
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("it-IT", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+const mDeleteAppointment = useMutation({
+  mutationFn: (appointmentId: number) => deleteAppointment(appointmentId),
+  onSuccess: () => {
+    // Invalida e ricarica le query
+    apiUtils.invalidateQueries({ queryKey: ["qGetAppointments"] });
+    apiUtils.invalidateQueries({ queryKey: ["qGetBookingHours"] });
+
+    // Mostra toast di successo
+    toast.add({
+      severity: "success",
+      summary: "Successo",
+      detail: "Appuntamento cancellato con successo",
+      life: 3000,
+    });
+  },
+  onError: (err: unknown) => {
+    // Estrai il messaggio di errore dal backend
+    let errorMessage = "Si è verificato un errore durante la cancellazione";
+
+    if (err instanceof AxiosError) {
+      const responseData = err.response?.data;
+      errorMessage = responseData ? responseData.errors : errorMessage;
+    }
+
+    // Mostra toast di errore
+    toast.add({
+      severity: "error",
+      summary: "Errore",
+      detail: errorMessage,
+      life: 5000,
+    });
+  },
+});
+
+// Computed per ottenere gli slot per la data selezionata
+const availableTimeSlots = computed((): TimeSlot[] => {
+  if (!selectedDate.value || !bookingHours.value) {
+    return [];
+  }
+
+  // Se la data è un giorno chiuso, non ci sono slot disponibili
+  if (bookingHours.value.closedDays.includes(selectedDate.value)) {
+    return [];
+  }
+
+  // Trova il SlotDay corrispondente alla data selezionata
+  const slotDay = bookingHours.value.slotDays.find(
+    (day: SlotDay) => day.date === selectedDate.value
+  );
+
+  // Se non esiste un SlotDay per questa data, non ci sono slot disponibili
+  if (!slotDay) {
+    return [];
+  }
+
+  // Restituisce tutti gli slot per questa data (sia disponibili che prenotati)
+  return slotDay.slots;
+});
+
+// Watcher per resettare lo slot selezionato se non è più disponibile
+watch(availableTimeSlots, (newSlots) => {
+  if (selectedTime.value) {
+    const slotExists = newSlots.some(
+      (slot) => slot.hour === selectedTime.value
+    );
+    if (!slotExists) {
+      selectedTime.value = null;
+    }
+  }
+});
+
+const handleBook = (): void => {
+  // Validazione: verifica che tutti i campi siano selezionati
+  if (
+    !selectedDate.value ||
+    !selectedTime.value ||
+    selectedServices.value.length === 0
+  ) {
+    return;
+  }
+
+  const user = getUser();
+  if (!user) {
+    console.error("Utente non autenticato");
+    return;
+  }
+
+  mCreateAppointment.mutate({
+    user_id: user.id,
+    date: selectedDate.value,
+    start_time: selectedTime.value,
+    services: selectedServices.value,
   });
 };
 
@@ -339,58 +306,11 @@ const handleDeleteClick = (appointmentId: number): void => {
       label: "Cancella",
       severity: "primary",
     },
-    accept: async () => {
-      await handleDeleteConfirm(appointmentId);
+    accept: () => {
+      mDeleteAppointment.mutate(appointmentId);
     },
   });
 };
-
-const handleDeleteConfirm = async (appointmentId: number): Promise<void> => {
-  const apiUrl = import.meta.env.VITE_BASEURI as string;
-  isLoadingDelete.value = true;
-
-  try {
-    await axios.delete(`${apiUrl}/api/appointments/${appointmentId}`);
-
-    // Ricarica gli appuntamenti
-    await getAppointments();
-
-    // Ricarica i booking hours per aggiornare gli slot disponibili
-    await getBookingHours();
-
-    // Mostra toast di successo
-    toast.add({
-      severity: "success",
-      summary: "Successo",
-      detail: "Appuntamento cancellato con successo",
-      life: 3000,
-    });
-  } catch (err: unknown) {
-    // Estrai il messaggio di errore dal backend
-    let errorMessage = "Si è verificato un errore durante la cancellazione";
-
-    if (err instanceof AxiosError) {
-      const responseData = err.response?.data;
-      errorMessage = responseData ? responseData.errors : errorMessage;
-    }
-
-    // Mostra toast di errore
-    toast.add({
-      severity: "error",
-      summary: "Errore",
-      detail: errorMessage,
-      life: 5000,
-    });
-  } finally {
-    isLoadingDelete.value = false;
-  }
-};
-
-onMounted(() => {
-  getServices();
-  getBookingHours();
-  getAppointments();
-});
 </script>
 
 <template>
@@ -399,7 +319,7 @@ onMounted(() => {
       <!-- Sezione alta: Card appuntamenti -->
       <section class="mb-8">
         <h2 class="mb-4 text-xl font-semibold">I tuoi appuntamenti</h2>
-        <div v-if="futureAppointments.length === 0" class="text-center py-8">
+        <div v-if="filteredAppointments.length === 0" class="text-center py-8">
           <div class="text-primary-400 mb-4 flex justify-center">
             <Icon name="calendar" size="64px" />
           </div>
@@ -410,14 +330,14 @@ onMounted(() => {
           class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"
         >
           <Card
-            v-for="appointment in futureAppointments"
+            v-for="appointment in filteredAppointments"
             :key="appointment.id"
             class="aspect-square max-w-[200px] relative"
           >
             <div class="flex flex-col h-full justify-between">
               <div>
                 <div class="text-sm text-gray-600 mb-2">
-                  {{ formatDate(appointment.date) }}
+                  {{ format(appointment.date, "dd/MM/yyyy") }}
                 </div>
                 <div class="text-lg font-semibold mb-2">
                   {{ appointment.startTime }}
@@ -449,7 +369,7 @@ onMounted(() => {
       <section>
         <h2 class="mb-4 text-xl font-semibold">Prenota un appuntamento</h2>
         <Card>
-          <AppLoader v-if="isPageLoading" />
+          <AppLoader v-if="isLoading" />
 
           <div v-else class="flex flex-col gap-6">
             <!-- Parte 1: Servizi -->
@@ -483,8 +403,8 @@ onMounted(() => {
               <p class="mb-3 text-sm font-medium">Seleziona data</p>
               <DatePicker
                 v-model="selectedDate"
-                :min="minDate"
-                :max="maxDate"
+                :min="appMinDate"
+                :max="appMaxDate"
                 :disabled="!hasSelectedServices"
               />
             </div>
@@ -513,7 +433,7 @@ onMounted(() => {
         </Card>
       </section>
     </div>
-    <AppLoader v-if="isPageLoading" />
+    <AppLoader v-if="isLoading" />
   </PageLayout>
 </template>
 

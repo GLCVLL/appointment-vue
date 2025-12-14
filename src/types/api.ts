@@ -18,6 +18,13 @@ export interface GetAppointmentsResponse {
 // ============================================
 // POST /api/appointments (store)
 // ============================================
+export interface CreateAppointmentRequest {
+  user_id: number;
+  date: string;
+  start_time: string;
+  services: number[];
+}
+
 export type CreateAppointmentSuccessResponse = number;
 
 // ============================================
